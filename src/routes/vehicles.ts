@@ -1,7 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import dvlaService from '../services/dvlaService';
 import vehicleService from '../services/vehicleService';
-import logger from '../utils/logger';
 
 const router = Router();
 

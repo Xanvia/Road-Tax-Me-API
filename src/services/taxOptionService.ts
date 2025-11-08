@@ -3,7 +3,7 @@ import { TaxOption } from '../entities/TaxOption';
 import logger from '../utils/logger';
 
 export interface CreateTaxOptionDTO {
-  duration: '1-month' | '3-months' | '6-months' | '12-months';
+  duration: '6-months' | '12-months';
   price: number;
   description?: string;
   isActive?: boolean;
@@ -11,7 +11,7 @@ export interface CreateTaxOptionDTO {
 }
 
 export interface UpdateTaxOptionDTO {
-  duration?: '1-month' | '3-months' | '6-months' | '12-months';
+  duration?: '6-months' | '12-months';
   price?: number;
   description?: string;
   isActive?: boolean;
@@ -127,8 +127,6 @@ class TaxOptionService {
       }
 
       const defaultOptions = [
-        { duration: '1-month' as const, price: 29.99, description: '1 Month Road Tax' },
-        { duration: '3-months' as const, price: 79.99, description: '3 Months Road Tax' },
         { duration: '6-months' as const, price: 149.99, description: '6 Months Road Tax' },
         { duration: '12-months' as const, price: 249.99, description: '12 Months Road Tax' },
       ];
