@@ -1,20 +1,18 @@
-version: '3.9'
-
 services:
   # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
     container_name: road-tax-db
     environment:
-      POSTGRES_USER: ${DB_USERNAME:-taxme_user}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-Tax2025mE$}
-      POSTGRES_DB: ${DB_NAME:-roadtaxme_db}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     ports:
       - "${DB_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-taxme_user}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -26,8 +24,8 @@ services:
     image: dpage/pgadmin4:latest
     container_name: road-tax-pgadmin
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@xanvia.tech
-      PGADMIN_DEFAULT_PASSWORD: Xanvia2025
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
     ports:
       - "5050:80"
     depends_on:
@@ -42,25 +40,25 @@ services:
       dockerfile: docker/Dockerfile
     container_name: road-tax-api
     environment:
-      NODE_ENV: ${NODE_ENV:-development}
+      NODE_ENV: ${NODE_ENV}
       PORT: ${PORT:-3000}
       DB_HOST: postgres
       DB_PORT: ${DB_PORT:-5432}
-      DB_USERNAME: ${DB_USERNAME:-taxme_user}
-      DB_PASSWORD: ${DB_PASSWORD:-secure_password}
-      DB_NAME: ${DB_NAME:-roadtaxme_db}
-      JWT_SECRET: ${JWT_SECRET:-your_secure_secret_key_here}
-      JWT_EXPIRY: ${JWT_EXPIRY:-7d}
-      DVLA_API_KEY: ${DVLA_API_KEY:-}
-      DVLA_PROD_URL: ${DVLA_PROD_URL:-https://driver-vehicle-licensing.api.gov.uk/vehicle-enquiry}
-      DVLA_TEST_URL: ${DVLA_TEST_URL:-https://uat.driver-vehicle-licensing.api.gov.uk/vehicle-enquiry}
-      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
-      STRIPE_PUBLIC_KEY: ${STRIPE_PUBLIC_KEY:-}
-      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
-      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173,http://localhost:3000}
-      LOG_LEVEL: ${LOG_LEVEL:-info}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRY: ${JWT_EXPIRY}
+      DVLA_API_KEY: ${DVLA_API_KEY}
+      DVLA_PROD_URL: ${DVLA_PROD_URL}
+      DVLA_TEST_URL: ${DVLA_TEST_URL}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_PUBLIC_KEY: ${STRIPE_PUBLIC_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      CORS_ORIGIN: ${CORS_ORIGIN}
+      LOG_LEVEL: ${LOG_LEVEL}
     ports:
-      - "${PORT:-3000}:3000"
+      - "${PORT}:3000"
     depends_on:
       postgres:
         condition: service_healthy
