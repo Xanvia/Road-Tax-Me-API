@@ -4,6 +4,18 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+const entitiesPath = process.env.NODE_ENV === 'production' 
+  ? path.join(__dirname, '../entities/*.js')
+  : path.join(__dirname, '../entities/*.ts');
+
+const migrationsPath = process.env.NODE_ENV === 'production'
+  ? path.join(__dirname, './migrations/*.js')
+  : path.join(__dirname, './migrations/*.ts');
+
+const subscribersPath = process.env.NODE_ENV === 'production'
+  ? path.join(__dirname, '../subscribers/*.js')
+  : path.join(__dirname, '../subscribers/*.ts');
+
 export const AppDataSource = new DataSource({
   type: 'postgres',
   host: process.env.DB_HOST || 'localhost',
@@ -13,7 +25,7 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_NAME || 'roadtaxme_db',
   synchronize: process.env.NODE_ENV === 'development',
   logging: process.env.NODE_ENV === 'development',
-  entities: [path.join(__dirname, '../entities/*.ts')],
-  migrations: [path.join(__dirname, './migrations/*.ts')],
-  subscribers: [path.join(__dirname, '../subscribers/*.ts')],
+  entities: [entitiesPath],
+  migrations: [migrationsPath],
+  subscribers: [subscribersPath],
 });
