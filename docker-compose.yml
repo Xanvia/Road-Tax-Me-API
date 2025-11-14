@@ -63,7 +63,7 @@ services:
       postgres:
         condition: service_healthy
     volumes:
-      - ./src:/app/src:ro
+      - ./src:/app/src
     networks:
       - road-tax-network
     restart: unless-stopped
