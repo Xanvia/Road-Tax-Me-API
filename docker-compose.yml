@@ -41,9 +41,9 @@ services:
     container_name: road-tax-api
     environment:
       NODE_ENV: ${NODE_ENV}
-      PORT: ${PORT:-3000}
+      PORT: ${PORT}
       DB_HOST: postgres
-      DB_PORT: ${DB_PORT:-5432}
+      DB_PORT: ${DB_PORT}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME}
