@@ -5,7 +5,6 @@ import helmet from 'helmet';
 import dotenv from 'dotenv';
 import { AppDataSource } from './database/connection';
 import { errorHandler } from './middleware/errorHandler';
-import logger from './utils/logger';
 import routes from './routes';
 
 dotenv.config();

@@ -1,6 +1,5 @@
 import { AppDataSource } from '../database/connection';
 import { Vehicle } from '../entities/Vehicle';
-import logger from '../utils/logger';
 import { DVLAResponse } from './dvlaService';
 
 class VehicleService {
@@ -52,10 +51,10 @@ class VehicleService {
       }
 
       await this.vehicleRepository.save(vehicle);
-      logger.info(`Vehicle saved: ${registrationNumber}`);
+      console.log(`Vehicle saved: ${registrationNumber}`);
       return vehicle;
     } catch (error) {
-      logger.error('Error saving vehicle:', error);
+      console.error('Error saving vehicle:', error);
       throw error;
     }
   }
@@ -67,7 +66,7 @@ class VehicleService {
       });
       return vehicle || null;
     } catch (error) {
-      logger.error('Error fetching vehicle:', error);
+      console.error('Error fetching vehicle:', error);
       throw error;
     }
   }
@@ -81,7 +80,7 @@ class VehicleService {
       });
       return { vehicles, total };
     } catch (error) {
-      logger.error('Error fetching vehicles:', error);
+      console.error('Error fetching vehicles:', error);
       throw error;
     }
   }
@@ -92,7 +91,7 @@ class VehicleService {
         where: { id },
       });
     } catch (error) {
-      logger.error('Error fetching vehicle by ID:', error);
+      console.error('Error fetching vehicle by ID:', error);
       throw error;
     }
   }

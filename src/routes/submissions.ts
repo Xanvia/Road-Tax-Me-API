@@ -2,7 +2,6 @@ import { Router, Request, Response, NextFunction } from 'express';
 import submissionService from '../services/submissionService';
 import vehicleService from '../services/vehicleService';
 import taxOptionService from '../services/taxOptionService';
-import logger from '../utils/logger';
 
 const router = Router();
 

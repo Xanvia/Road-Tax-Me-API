@@ -1,5 +1,4 @@
 import axios, { AxiosError } from 'axios';
-import logger from '../utils/logger';
 
 export interface DVLAResponse {
   registrationNumber: string;
@@ -36,7 +35,7 @@ class DVLAService {
       const isDevelopment = process.env.NODE_ENV === 'development';
 
       if (isDevelopment) {
-        logger.info(`[DEV] Looking up vehicle: ${registrationNumber}`);
+        console.log(`[DEV] Looking up vehicle: ${registrationNumber}`);
         return this.getMockVehicleData(registrationNumber);
       }
 
@@ -55,22 +54,22 @@ class DVLAService {
         }
       );
 
-      logger.info(`Vehicle lookup successful for: ${registrationNumber}`);
+      console.log(`Vehicle lookup successful for: ${registrationNumber}`);
       return response.data;
     } catch (error) {
       const axiosError = error as AxiosError;
       
       if (axiosError.response?.status === 404) {
-        logger.warn(`Vehicle not found: ${registrationNumber}`);
+        console.error(`Vehicle not found: ${registrationNumber}`);
         throw new Error('Vehicle not found');
       }
 
       if (axiosError.response?.status === 400) {
-        logger.warn(`Invalid registration format: ${registrationNumber}`);
+        console.error(`Invalid registration format: ${registrationNumber}`);
         throw new Error('Invalid registration format');
       }
 
-      logger.error('DVLA API error:', error);
+      console.error('DVLA API error:', error);
       throw new Error('Failed to lookup vehicle from DVLA');
     }
   }

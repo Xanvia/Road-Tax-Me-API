@@ -4,7 +4,6 @@ import { Admin } from '../entities/Admin';
 import { Submission } from '../entities/Submission';
 import { Payment } from '../entities/Payment';
 import { generateToken } from '../utils/jwt';
-import logger from '../utils/logger';
 
 export interface AdminLoginDTO {
   email: string;
@@ -64,10 +63,10 @@ class AdminService {
         role: admin.role,
       });
 
-      logger.info(`Admin logged in: ${admin.email}`);
+      console.log(`Admin logged in: ${admin.email}`);
       return { token, admin };
     } catch (error) {
-      logger.error('Login error:', error);
+      console.error('Login error:', error);
       throw error;
     }
   }
@@ -97,10 +96,10 @@ class AdminService {
       });
 
       await this.adminRepository.save(admin);
-      logger.info(`Admin created: ${admin.email}`);
+      console.log(`Admin created: ${admin.email}`);
       return admin;
     } catch (error) {
-      logger.error('Error creating admin:', error);
+      console.error('Error creating admin:', error);
       throw error;
     }
   }
@@ -111,7 +110,7 @@ class AdminService {
         where: { id },
       });
     } catch (error) {
-      logger.error('Error fetching admin:', error);
+      console.error('Error fetching admin:', error);
       throw error;
     }
   }
@@ -122,7 +121,7 @@ class AdminService {
         order: { createdAt: 'DESC' },
       });
     } catch (error) {
-      logger.error('Error fetching admins:', error);
+      console.error('Error fetching admins:', error);
       throw error;
     }
   }
@@ -152,10 +151,10 @@ class AdminService {
       }
 
       await this.adminRepository.save(admin);
-      logger.info(`Admin updated: ${id}`);
+      console.log(`Admin updated: ${id}`);
       return admin;
     } catch (error) {
-      logger.error('Error updating admin:', error);
+      console.error('Error updating admin:', error);
       throw error;
     }
   }
@@ -166,10 +165,10 @@ class AdminService {
       if (result.affected === 0) {
         return false;
       }
-      logger.info(`Admin deleted: ${id}`);
+      console.log(`Admin deleted: ${id}`);
       return true;
     } catch (error) {
-      logger.error('Error deleting admin:', error);
+      console.error('Error deleting admin:', error);
       throw error;
     }
   }
@@ -198,7 +197,7 @@ class AdminService {
         conversionRate: Math.round(conversionRate * 100) / 100,
       };
     } catch (error) {
-      logger.error('Error getting dashboard statistics:', error);
+      console.error('Error getting dashboard statistics:', error);
       throw error;
     }
   }
@@ -215,7 +214,7 @@ class AdminService {
 
       return await bcrypt.compare(password, admin.passwordHash);
     } catch (error) {
-      logger.error('Error validating credentials:', error);
+      console.error('Error validating credentials:', error);
       return false;
     }
   }

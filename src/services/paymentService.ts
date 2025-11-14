@@ -2,7 +2,6 @@ import axios from 'axios';
 import { AppDataSource } from '../database/connection';
 import { Payment } from '../entities/Payment';
 import { Submission } from '../entities/Submission';
-import logger from '../utils/logger';
 
 export interface CreatePaymentIntentDTO {
   submissionId: string;
@@ -27,7 +26,7 @@ class PaymentService {
 
       // For development, use mock payment intent
       if (process.env.NODE_ENV === 'development') {
-        logger.info(`[DEV] Creating payment intent for submission: ${data.submissionId}`);
+        console.log(`[DEV] Creating payment intent for submission: ${data.submissionId}`);
         const paymentIntentId = `pi_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         const clientSecret = `${paymentIntentId}_secret_${Math.random().toString(36).substr(2, 20)}`;
 
@@ -80,14 +79,14 @@ class PaymentService {
       });
 
       await this.paymentRepository.save(payment);
-      logger.info(`Payment intent created: ${response.data.id}`);
+      console.log(`Payment intent created: ${response.data.id}`);
 
       return {
         clientSecret: response.data.client_secret,
         paymentIntentId: response.data.id,
       };
     } catch (error) {
-      logger.error('Error creating payment intent:', error);
+      console.error('Error creating payment intent:', error);
       throw error;
     }
   }
@@ -102,10 +101,10 @@ class PaymentService {
           await this.handlePaymentFailed(event.data.object);
           break;
         default:
-          logger.info(`Unhandled event type: ${event.type}`);
+          console.log(`Unhandled event type: ${event.type}`);
       }
     } catch (error) {
-      logger.error('Error handling Stripe webhook:', error);
+      console.error('Error handling Stripe webhook:', error);
       throw error;
     }
   }
@@ -121,7 +120,7 @@ class PaymentService {
       });
 
       if (!payment) {
-        logger.warn(`Payment not found for transaction: ${transactionId}`);
+        console.error(`Payment not found for transaction: ${transactionId}`);
         return;
       }
 
@@ -137,10 +136,10 @@ class PaymentService {
       if (submission) {
         submission.status = 'completed';
         await this.submissionRepository.save(submission);
-        logger.info(`Payment completed and submission updated: ${submissionId}`);
+        console.log(`Payment completed and submission updated: ${submissionId}`);
       }
     } catch (error) {
-      logger.error('Error handling payment succeeded:', error);
+      console.error('Error handling payment succeeded:', error);
       throw error;
     }
   }
@@ -156,7 +155,7 @@ class PaymentService {
       });
 
       if (!payment) {
-        logger.warn(`Payment not found for transaction: ${transactionId}`);
+        console.error(`Payment not found for transaction: ${transactionId}`);
         return;
       }
 
@@ -172,10 +171,10 @@ class PaymentService {
       if (submission) {
         submission.status = 'failed';
         await this.submissionRepository.save(submission);
-        logger.info(`Payment failed and submission updated: ${submissionId}`);
+        console.log(`Payment failed and submission updated: ${submissionId}`);
       }
     } catch (error) {
-      logger.error('Error handling payment failed:', error);
+      console.error('Error handling payment failed:', error);
       throw error;
     }
   }
@@ -186,7 +185,7 @@ class PaymentService {
         where: { submissionId },
       });
     } catch (error) {
-      logger.error('Error fetching payment:', error);
+      console.error('Error fetching payment:', error);
       throw error;
     }
   }
@@ -205,7 +204,7 @@ class PaymentService {
       const [payments, total] = await query.getManyAndCount();
       return { payments, total };
     } catch (error) {
-      logger.error('Error fetching payments:', error);
+      console.error('Error fetching payments:', error);
       throw error;
     }
   }
@@ -239,9 +238,9 @@ class PaymentService {
         await this.submissionRepository.save(submission);
       }
 
-      logger.info(`Refund initiated for payment: ${paymentId}`);
+      console.log(`Refund initiated for payment: ${paymentId}`);
     } catch (error) {
-      logger.error('Error initiating refund:', error);
+      console.error('Error initiating refund:', error);
       throw error;
     }
   }

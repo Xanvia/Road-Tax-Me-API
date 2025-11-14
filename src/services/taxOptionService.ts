@@ -1,6 +1,5 @@
 import { AppDataSource } from '../database/connection';
 import { TaxOption } from '../entities/TaxOption';
-import logger from '../utils/logger';
 
 export interface CreateTaxOptionDTO {
   duration: '6-months' | '12-months';
@@ -32,10 +31,10 @@ class TaxOptionService {
       });
 
       await this.taxOptionRepository.save(taxOption);
-      logger.info(`Tax option created: ${data.duration}`);
+      console.log(`Tax option created: ${data.duration}`);
       return taxOption;
     } catch (error) {
-      logger.error('Error creating tax option:', error);
+      console.error('Error creating tax option:', error);
       throw error;
     }
   }
@@ -46,7 +45,7 @@ class TaxOptionService {
         where: { id },
       });
     } catch (error) {
-      logger.error('Error fetching tax option:', error);
+      console.error('Error fetching tax option:', error);
       throw error;
     }
   }
@@ -64,7 +63,7 @@ class TaxOptionService {
         .addOrderBy('taxOption.duration', 'ASC')
         .getMany();
     } catch (error) {
-      logger.error('Error fetching tax options:', error);
+      console.error('Error fetching tax options:', error);
       throw error;
     }
   }
@@ -97,10 +96,10 @@ class TaxOptionService {
       }
 
       await this.taxOptionRepository.save(taxOption);
-      logger.info(`Tax option updated: ${id}`);
+      console.log(`Tax option updated: ${id}`);
       return taxOption;
     } catch (error) {
-      logger.error('Error updating tax option:', error);
+      console.error('Error updating tax option:', error);
       throw error;
     }
   }
@@ -111,10 +110,10 @@ class TaxOptionService {
       if (result.affected === 0) {
         return false;
       }
-      logger.info(`Tax option deleted: ${id}`);
+      console.log(`Tax option deleted: ${id}`);
       return true;
     } catch (error) {
-      logger.error('Error deleting tax option:', error);
+      console.error('Error deleting tax option:', error);
       throw error;
     }
   }
@@ -136,12 +135,12 @@ class TaxOptionService {
           ...defaultOptions[i],
           isActive: true,
           displayOrder: i + 1,
-        });
+        });   
       }
 
-      logger.info('Default tax options initialized');
+      console.log('Default tax options initialized');
     } catch (error) {
-      logger.error('Error initializing default tax options:', error);
+      console.error('Error initializing default tax options:', error);
     }
   }
 }

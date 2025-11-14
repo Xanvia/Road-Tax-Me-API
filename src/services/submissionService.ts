@@ -1,7 +1,6 @@
 import { AppDataSource } from '../database/connection';
 import { Submission } from '../entities/Submission';
 import { UserContact } from '../entities/UserContact';
-import logger from '../utils/logger';
 
 export interface CreateSubmissionDTO {
   vehicleId: string;
@@ -49,10 +48,10 @@ class SubmissionService {
       });
 
       await this.submissionRepository.save(submission);
-      logger.info(`Submission created: ${submission.id}`);
+      console.log(`Submission created: ${submission.id}`);
       return submission;
     } catch (error) {
-      logger.error('Error creating submission:', error);
+      console.error('Error creating submission:', error);
       throw error;
     }
   }
@@ -65,7 +64,7 @@ class SubmissionService {
       });
       return submission || null;
     } catch (error) {
-      logger.error('Error fetching submission:', error);
+      console.error('Error fetching submission:', error);
       throw error;
     }
   }
@@ -78,7 +77,7 @@ class SubmissionService {
       });
       return submission ? { status: submission.status, updatedAt: submission.updatedAt } : null;
     } catch (error) {
-      logger.error('Error fetching submission status:', error);
+      console.error('Error fetching submission status:', error);
       throw error;
     }
   }
@@ -98,10 +97,10 @@ class SubmissionService {
       }
 
       await this.submissionRepository.save(submission);
-      logger.info(`Submission updated: ${id}`);
+      console.log(`Submission updated: ${id}`);
       return submission;
     } catch (error) {
-      logger.error('Error updating submission:', error);
+      console.error('Error updating submission:', error);
       throw error;
     }
   }
@@ -131,7 +130,7 @@ class SubmissionService {
       const [submissions, total] = await query.getManyAndCount();
       return { submissions, total };
     } catch (error) {
-      logger.error('Error fetching submissions:', error);
+      console.error('Error fetching submissions:', error);
       throw error;
     }
   }
@@ -150,10 +149,10 @@ class SubmissionService {
 
       // Delete submission
       await this.submissionRepository.delete(id);
-      logger.info(`Submission deleted: ${id}`);
+      console.log(`Submission deleted: ${id}`);
       return true;
     } catch (error) {
-      logger.error('Error deleting submission:', error);
+      console.error('Error deleting submission:', error);
       throw error;
     }
   }
@@ -166,7 +165,7 @@ class SubmissionService {
         take: limit,
       });
     } catch (error) {
-      logger.error('Error fetching recent submissions:', error);
+      console.error('Error fetching recent submissions:', error);
       throw error;
     }
   }
@@ -178,7 +177,7 @@ class SubmissionService {
         relations: ['vehicle', 'userContact'],
       });
     } catch (error) {
-      logger.error('Error fetching submissions by status:', error);
+      console.error('Error fetching submissions by status:', error);
       throw error;
     }
   }
