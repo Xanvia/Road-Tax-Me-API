@@ -1,4 +1,8 @@
 import 'reflect-metadata';
+// Disable stdout buffering for Docker/production environments
+if (typeof (process.stdout as any)._handle !== 'undefined') {
+  (process.stdout as any)._handle.setBlocking(true);
+}
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
