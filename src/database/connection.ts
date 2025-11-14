@@ -23,7 +23,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USERNAME || 'taxme_user',
   password: process.env.DB_PASSWORD || 'secure_password',
   database: process.env.DB_NAME || 'roadtaxme_db',
-  synchronize: process.env.NODE_ENV === 'development',
+  synchronize: true,
   logging: process.env.NODE_ENV === 'development',
   entities: [entitiesPath],
   migrations: [migrationsPath],
