@@ -38,22 +38,22 @@ const startServer = async () => {
   try {
     // Initialize TypeORM connection
     await AppDataSource.initialize();
-    logger.info('Database connection established');
+    console.log('Database connection established');
 
     // Start Express server
     app.listen(PORT, () => {
-      logger.info(`Server running on port ${PORT}`);
-      logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`Server running on port ${PORT}`);
+      console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
     });
   } catch (error) {
-    logger.error('Failed to start server:', error);
+    console.error('Failed to start server:', error);
     process.exit(1);
   }
 };
 
 // Handle graceful shutdown
 process.on('SIGTERM', async () => {
-  logger.info('SIGTERM signal received: closing HTTP server');
+  console.log('SIGTERM signal received: closing HTTP server');
   if (AppDataSource.isInitialized) {
     await AppDataSource.destroy();
   }
