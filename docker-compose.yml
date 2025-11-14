@@ -58,7 +58,7 @@ services:
       CORS_ORIGIN: ${CORS_ORIGIN}
       LOG_LEVEL: ${LOG_LEVEL}
     ports:
-      - "${PORT}:3000"
+      - "${PORT}"
     depends_on:
       postgres:
         condition: service_healthy
