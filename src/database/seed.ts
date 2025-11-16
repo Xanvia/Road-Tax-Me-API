@@ -41,7 +41,6 @@ const seedAdminUser = async () => {
       passwordHash,
       firstName: process.env.SEED_ADMIN_FIRST_NAME || 'Super',
       lastName: process.env.SEED_ADMIN_LAST_NAME || 'Admin',
-      role: 'super_admin',
       isActive: true,
     });
 
@@ -49,7 +48,6 @@ const seedAdminUser = async () => {
 
     console.log('✅ Admin user created successfully!');
     console.log(`   Email: ${admin.email}`);
-    console.log(`   Role: ${admin.role}`);
     console.log(`   Name: ${admin.firstName} ${admin.lastName}`);
 
     process.exit(0);

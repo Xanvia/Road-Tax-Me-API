@@ -15,7 +15,6 @@ export interface CreateAdminDTO {
   password: string;
   firstName: string;
   lastName: string;
-  role?: 'admin' | 'super_admin';
 }
 
 export interface DashboardStatistics {
@@ -60,7 +59,6 @@ class AdminService {
       const token = generateToken({
         adminId: admin.id,
         email: admin.email,
-        role: admin.role,
       });
 
       console.log(`Admin logged in: ${admin.email}`);
@@ -91,7 +89,6 @@ class AdminService {
         passwordHash,
         firstName: data.firstName,
         lastName: data.lastName,
-        role: data.role || 'admin',
         isActive: true,
       });
 
@@ -142,9 +139,6 @@ class AdminService {
       }
       if (updates.lastName) {
         admin.lastName = updates.lastName;
-      }
-      if (updates.role) {
-        admin.role = updates.role;
       }
       if (updates.isActive !== undefined) {
         admin.isActive = updates.isActive;

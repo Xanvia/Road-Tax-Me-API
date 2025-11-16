@@ -1,5 +1,5 @@
 import { Router, Response, NextFunction } from 'express';
-import { AuthRequest, authenticate, authorize } from '../middleware/authentication';
+import { AuthRequest, authenticate } from '../middleware/authentication';
 import adminService from '../services/adminService';
 import submissionService from '../services/submissionService';
 import paymentService from '../services/paymentService';
@@ -232,117 +232,6 @@ router.post('/payments/:id/refund', async (req: AuthRequest, res: Response, next
         message: err.message,
       });
     }
-    next(error);
-  }
-});
-
-// GET /api/admin/admins
-router.get('/admins', authorize('super_admin'), async (req: AuthRequest, res: Response, next: NextFunction) => {
-  try {
-    const admins = await adminService.getAllAdmins();
-
-    res.json({
-      status: 'success',
-      data: admins,
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// POST /api/admin/admins
-router.post('/admins', authorize('super_admin'), async (req: AuthRequest, res: Response, next: NextFunction) => {
-  try {
-    const { email, password, firstName, lastName } = req.body;
-
-    if (!email || !password || !firstName || !lastName) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'email, password, firstName, and lastName are required',
-      });
-    }
-
-    const admin = await adminService.createAdmin({
-      email,
-      password,
-      firstName,
-      lastName,
-    });
-
-    res.status(201).json({
-      status: 'success',
-      data: {
-        id: admin.id,
-        email: admin.email,
-        firstName: admin.firstName,
-        lastName: admin.lastName,
-        role: admin.role,
-      },
-      message: 'Admin created',
-    });
-  } catch (error) {
-    const err = error as Error;
-    if (err.message.includes('already exists')) {
-      return res.status(409).json({
-        status: 'error',
-        message: err.message,
-      });
-    }
-    next(error);
-  }
-});
-
-// PUT /api/admin/admins/:id
-router.put('/admins/:id', authorize('super_admin'), async (req: AuthRequest, res: Response, next: NextFunction) => {
-  try {
-    const { id } = req.params;
-    const updates = req.body;
-
-    const admin = await adminService.updateAdmin(id, updates);
-
-    if (!admin) {
-      return res.status(404).json({
-        status: 'error',
-        message: 'Admin not found',
-      });
-    }
-
-    res.json({
-      status: 'success',
-      data: {
-        id: admin.id,
-        email: admin.email,
-        firstName: admin.firstName,
-        lastName: admin.lastName,
-        role: admin.role,
-        isActive: admin.isActive,
-      },
-      message: 'Admin updated',
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// DELETE /api/admin/admins/:id
-router.delete('/admins/:id', authorize('super_admin'), async (req: AuthRequest, res: Response, next: NextFunction) => {
-  try {
-    const { id } = req.params;
-
-    const deleted = await adminService.deleteAdmin(id);
-
-    if (!deleted) {
-      return res.status(404).json({
-        status: 'error',
-        message: 'Admin not found',
-      });
-    }
-
-    res.json({
-      status: 'success',
-      message: 'Admin deleted',
-    });
-  } catch (error) {
     next(error);
   }
 });

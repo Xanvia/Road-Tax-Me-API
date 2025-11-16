@@ -18,9 +18,6 @@ export class Admin {
   @Column()
   lastName: string;
 
-  @Column({ type: 'enum', enum: ['admin', 'super_admin'], default: 'admin' })
-  role: 'admin' | 'super_admin';
-
   @Column({ default: true })
   isActive: boolean;
 

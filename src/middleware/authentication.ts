@@ -6,7 +6,6 @@ export interface AuthRequest extends Request {
   admin?: {
     adminId: string;
     email: string;
-    role: 'admin' | 'super_admin';
   };
 }
 
@@ -24,7 +23,6 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
     req.admin = {
       adminId: payload.adminId,
       email: payload.email,
-      role: payload.role,
     };
 
     next();
@@ -35,18 +33,4 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
       res.status(401).json({ status: 'error', message: 'Invalid token' });
     }
   }
-};
-
-export const authorize = (...allowedRoles: string[]) => {
-  return (req: AuthRequest, res: Response, next: NextFunction) => {
-    if (!req.admin) {
-      return res.status(401).json({ status: 'error', message: 'Not authenticated' });
-    }
-
-    if (!allowedRoles.includes(req.admin.role)) {
-      throw new ForbiddenError('You do not have permission to access this resource');
-    }
-
-    next();
-  };
 };

@@ -24,7 +24,7 @@ export const AppDataSource = new DataSource({
   password: process.env.DB_PASSWORD || 'secure_password',
   database: process.env.DB_NAME || 'roadtaxme_db',
   synchronize: true,
-  logging: process.env.NODE_ENV === 'development',
+  logging: false,
   entities: [entitiesPath],
   migrations: [migrationsPath],
   subscribers: [subscribersPath],
