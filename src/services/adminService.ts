@@ -107,7 +107,6 @@ class AdminService {
         where: { id },
       });
     } catch (error) {
-      console.error('Error fetching admin:', error);
       throw error;
     }
   }
@@ -145,7 +144,6 @@ class AdminService {
       }
 
       await this.adminRepository.save(admin);
-      console.log(`Admin updated: ${id}`);
       return admin;
     } catch (error) {
       console.error('Error updating admin:', error);
@@ -159,7 +157,6 @@ class AdminService {
       if (result.affected === 0) {
         return false;
       }
-      console.log(`Admin deleted: ${id}`);
       return true;
     } catch (error) {
       console.error('Error deleting admin:', error);

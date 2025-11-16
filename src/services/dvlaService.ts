@@ -35,7 +35,6 @@ class DVLAService {
       const isDevelopment = process.env.NODE_ENV === 'development';
 
       if (isDevelopment) {
-        console.log(`[DEV] Looking up vehicle: ${registrationNumber}`);
         return this.getMockVehicleData(registrationNumber);
       }
 
@@ -54,18 +53,15 @@ class DVLAService {
         }
       );
 
-      console.log(`Vehicle lookup successful for: ${registrationNumber}`);
       return response.data;
     } catch (error) {
       const axiosError = error as AxiosError;
       
       if (axiosError.response?.status === 404) {
-        console.error(`Vehicle not found: ${registrationNumber}`);
         throw new Error('Vehicle not found');
       }
 
       if (axiosError.response?.status === 400) {
-        console.error(`Invalid registration format: ${registrationNumber}`);
         throw new Error('Invalid registration format');
       }
 

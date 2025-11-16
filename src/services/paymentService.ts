@@ -32,7 +32,6 @@ class PaymentService {
       if (existingPayment) {
         // If payment already exists, return existing client secret if available
         if (existingPayment.metadata?.client_secret) {
-          console.log(`Returning existing payment intent for submission: ${data.submissionId}`);
           return {
             clientSecret: existingPayment.metadata.client_secret,
             paymentIntentId: existingPayment.transactionId,
@@ -63,7 +62,6 @@ class PaymentService {
         }
       );
 
-      console.log(`Stripe payment intent created: ${response.data.id}`);
 
       // Now save to database - use try-catch to handle race conditions
       try {
@@ -78,7 +76,6 @@ class PaymentService {
         });
 
         await this.paymentRepository.save(payment);
-        console.log(`Payment record saved for submission: ${data.submissionId}`);
         
         return {
           clientSecret: response.data.client_secret,
@@ -88,7 +85,6 @@ class PaymentService {
         // If duplicate key error, another request beat us to it
         // Fetch and return the existing payment
         if (dbError.code === '23505') {
-          console.log(`Race condition detected - fetching existing payment for submission: ${data.submissionId}`);
           
           // Wait a bit and try again to ensure the other request has saved
           await new Promise(resolve => setTimeout(resolve, 100));
@@ -98,16 +94,13 @@ class PaymentService {
           });
           
           if (existingPayment?.metadata?.client_secret) {
-            console.log(`Returning existing payment intent after race condition: ${existingPayment.transactionId}`);
             return {
               clientSecret: existingPayment.metadata.client_secret,
               paymentIntentId: existingPayment.transactionId,
             };
           }
         }
-        
-        // If not a duplicate or couldn't find existing payment, re-throw
-        console.error('Database error while saving payment:', dbError);
+
         throw dbError;
       }
     } catch (error: any) {
@@ -134,16 +127,20 @@ class PaymentService {
     try {
       switch (event.type) {
         case 'payment_intent.succeeded':
+          console.log('✅ Handling payment_intent.succeeded');
           await this.handlePaymentSucceeded(event.data.object);
+          console.log('✅ payment_intent.succeeded handled successfully');
           break;
         case 'payment_intent.failed':
+          console.log('❌ Handling payment_intent.failed');
           await this.handlePaymentFailed(event.data.object);
+          console.log('❌ payment_intent.failed handled successfully');
           break;
         default:
-          console.log(`Unhandled event type: ${event.type}`);
+          console.log(`⚠️  Unhandled event type: ${event.type}`);
       }
     } catch (error) {
-      console.error('Error handling Stripe webhook:', error);
+      console.error('❌ Error handling Stripe webhook:', error);
       throw error;
     }
   }
@@ -152,6 +149,9 @@ class PaymentService {
     try {
       const submissionId = paymentIntent.metadata.submissionId;
       const transactionId = paymentIntent.id;
+      
+      console.log(`💳 Processing successful payment:`);
+      console.log(`   Amount: ${paymentIntent.amount / 100} ${paymentIntent.currency.toUpperCase()}`);
 
       // Find payment
       const payment = await this.paymentRepository.findOne({
@@ -159,13 +159,17 @@ class PaymentService {
       });
 
       if (!payment) {
-        console.error(`Payment not found for transaction: ${transactionId}`);
+        console.error(`❌ Payment not found for transaction: ${transactionId}`);
         return;
       }
 
+      console.log(`   Current DB status: ${payment.status}`);
+
       // Update payment status
       payment.status = 'completed';
+      payment.metadata = { ...payment.metadata, ...paymentIntent };
       await this.paymentRepository.save(payment);
+      console.log(`   ✅ Payment status updated to: completed`);
 
       // Update submission status
       const submission = await this.submissionRepository.findOne({
@@ -175,10 +179,11 @@ class PaymentService {
       if (submission) {
         submission.status = 'completed';
         await this.submissionRepository.save(submission);
-        console.log(`Payment completed and submission updated: ${submissionId}`);
+      } else {
+        console.error(`❌ Submission not found: ${submissionId}`);
       }
     } catch (error) {
-      console.error('Error handling payment succeeded:', error);
+      console.error('❌ Error handling payment succeeded:', error);
       throw error;
     }
   }
@@ -187,20 +192,25 @@ class PaymentService {
     try {
       const submissionId = paymentIntent.metadata.submissionId;
       const transactionId = paymentIntent.id;
-
+      
+      console.log(`❌ Processing failed payment:`);
       // Find payment
       const payment = await this.paymentRepository.findOne({
         where: { transactionId },
       });
 
       if (!payment) {
-        console.error(`Payment not found for transaction: ${transactionId}`);
+        console.error(`❌ Payment not found for transaction: ${transactionId}`);
         return;
       }
 
+      console.log(`   Current DB status: ${payment.status}`);
+
       // Update payment status
       payment.status = 'failed';
+      payment.metadata = { ...payment.metadata, ...paymentIntent };
       await this.paymentRepository.save(payment);
+      console.log(`   ✅ Payment status updated to: failed`);
 
       // Update submission status
       const submission = await this.submissionRepository.findOne({
@@ -210,10 +220,11 @@ class PaymentService {
       if (submission) {
         submission.status = 'failed';
         await this.submissionRepository.save(submission);
-        console.log(`Payment failed and submission updated: ${submissionId}`);
+      } else {
+        console.error(`❌ Submission not found: ${submissionId}`);
       }
     } catch (error) {
-      console.error('Error handling payment failed:', error);
+      console.error('❌ Error handling payment failed:', error);
       throw error;
     }
   }
@@ -225,6 +236,92 @@ class PaymentService {
       });
     } catch (error) {
       console.error('Error fetching payment:', error);
+      throw error;
+    }
+  }
+
+  async getLivePaymentStatus(submissionId: string): Promise<{ 
+    paymentIntentId: string;
+    status: string;
+    amount: number;
+    currency: string;
+    dbStatus: string;
+    lastUpdated: Date;
+  } | null> {
+    try {
+      // Get payment from database
+      const payment = await this.paymentRepository.findOne({
+        where: { submissionId },
+      });
+
+      if (!payment) {
+        return null;
+      }
+
+      // Fetch LIVE status from Stripe
+      const response = await axios.get(
+        `https://api.stripe.com/v1/payment_intents/${payment.transactionId}`,
+        {
+          auth: {
+            username: this.stripeSecretKey,
+            password: '',
+          },
+          timeout: 10000,
+        }
+      );
+
+      const stripePaymentIntent = response.data;
+      
+
+      // Update database if status changed
+      const stripeStatus = stripePaymentIntent.status;
+      let mappedStatus: 'pending' | 'completed' | 'failed' | 'refunded';
+
+      switch (stripeStatus) {
+        case 'succeeded':
+          mappedStatus = 'completed';
+          break;
+        case 'canceled':
+        case 'requires_payment_method':
+          mappedStatus = 'failed';
+          break;
+        case 'processing':
+        case 'requires_action':
+        case 'requires_confirmation':
+        case 'requires_capture':
+          mappedStatus = 'pending';
+          break;
+        default:
+          mappedStatus = payment.status;
+      }
+
+      // Update database if status differs
+      if (mappedStatus !== payment.status) {
+        payment.status = mappedStatus;
+        await this.paymentRepository.save(payment);
+
+        // Also update submission status
+        const submission = await this.submissionRepository.findOne({
+          where: { id: submissionId },
+        });
+        if (submission && mappedStatus === 'completed') {
+          submission.status = 'completed';
+          await this.submissionRepository.save(submission);
+        }
+      }
+
+      return {
+        paymentIntentId: payment.transactionId,
+        status: stripeStatus,
+        amount: stripePaymentIntent.amount / 100,
+        currency: stripePaymentIntent.currency.toUpperCase(),
+        dbStatus: payment.status,
+        lastUpdated: payment.updatedAt,
+      };
+    } catch (error: any) {
+      if (error.response) {
+        console.error('Stripe API Error:', error.response.data);
+      }
       throw error;
     }
   }

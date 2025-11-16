@@ -7,7 +7,7 @@ const router = Router();
 // POST /api/vehicles/lookup
 router.post('/lookup', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { registrationNumber } = req.body;
+    const { registrationNumber, forceRefresh } = req.body;
 
     if (!registrationNumber || typeof registrationNumber !== 'string') {
       return res.status(400).json({
@@ -16,7 +16,27 @@ router.post('/lookup', async (req: Request, res: Response, next: NextFunction) =
       });
     }
 
-    // Lookup vehicle from DVLA API
+    // Check if vehicle exists in database (unless forceRefresh is true)
+    if (!forceRefresh) {
+      const cachedVehicle = await vehicleService.getVehicleByRegistration(registrationNumber);
+      
+      if (cachedVehicle) {
+        // Check if cached data is recent (less than 30 days old)
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        
+        if (cachedVehicle.updatedAt > thirtyDaysAgo) {
+          return res.json({
+            status: 'success',
+            data: cachedVehicle,
+            message: 'Vehicle found in cache',
+            cached: true,
+          });
+        }
+      }
+    }
+
+    // Lookup vehicle from DVLA API (fresh data)
     const dvlaData = await dvlaService.lookupVehicle(registrationNumber);
 
     // Save/update vehicle in database
@@ -26,6 +46,7 @@ router.post('/lookup', async (req: Request, res: Response, next: NextFunction) =
       status: 'success',
       data: vehicle,
       message: 'Vehicle found and cached',
+      cached: false,
     });
   } catch (error) {
     const err = error as Error;
