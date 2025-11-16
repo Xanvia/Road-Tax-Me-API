@@ -10,6 +10,7 @@ import dotenv from 'dotenv';
 import { AppDataSource } from './database/connection';
 import { errorHandler } from './middleware/errorHandler';
 import routes from './routes';
+import taxOptionService from './services/taxOptionService';
 
 dotenv.config();
 
@@ -42,6 +43,10 @@ const startServer = async () => {
     // Initialize TypeORM connection
     await AppDataSource.initialize();
     console.log('Database connection established');
+
+    // Initialize default tax options
+    await taxOptionService.initializeDefaultTaxOptions();
+    console.log('Tax options initialized');
 
     // Start Express server
     app.listen(PORT, () => {

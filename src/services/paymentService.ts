@@ -24,31 +24,23 @@ class PaymentService {
         throw new Error('Submission not found');
       }
 
-      // For development, use mock payment intent
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`[DEV] Creating payment intent for submission: ${data.submissionId}`);
-        const paymentIntentId = `pi_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        const clientSecret = `${paymentIntentId}_secret_${Math.random().toString(36).substr(2, 20)}`;
+      // Check if payment already exists for this submission
+      const existingPayment = await this.paymentRepository.findOne({
+        where: { submissionId: data.submissionId },
+      });
 
-        // Create payment record
-        const payment = this.paymentRepository.create({
-          submissionId: data.submissionId,
-          amount: data.amount,
-          currency: 'GBP',
-          provider: 'stripe',
-          transactionId: paymentIntentId,
-          status: 'pending',
-          metadata: {
-            clientSecret,
-            createdAt: new Date().toISOString(),
-          },
-        });
-
-        await this.paymentRepository.save(payment);
-        return { clientSecret, paymentIntentId };
+      if (existingPayment) {
+        // If payment already exists, return existing client secret if available
+        if (existingPayment.metadata?.client_secret) {
+          return {
+            clientSecret: existingPayment.metadata.client_secret,
+            paymentIntentId: existingPayment.transactionId,
+          };
+        }
+        throw new Error('Payment already exists for this submission');
       }
 
-      // Production: Create Stripe payment intent
+      // Create Stripe payment intent
       const response = await axios.post(
         'https://api.stripe.com/v1/payment_intents',
         {

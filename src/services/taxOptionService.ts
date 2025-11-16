@@ -2,7 +2,7 @@ import { AppDataSource } from '../database/connection';
 import { TaxOption } from '../entities/TaxOption';
 
 export interface CreateTaxOptionDTO {
-  duration: '6-months' | '12-months';
+  duration: '6-months' | '12-months' | 'Direct Debit';
   price: number;
   description?: string;
   isActive?: boolean;
@@ -10,7 +10,7 @@ export interface CreateTaxOptionDTO {
 }
 
 export interface UpdateTaxOptionDTO {
-  duration?: '6-months' | '12-months';
+  duration?: '6-months' | '12-months' | 'Direct Debit';
   price?: number;
   description?: string;
   isActive?: boolean;
@@ -128,6 +128,7 @@ class TaxOptionService {
       const defaultOptions = [
         { duration: '6-months' as const, price: 149.99, description: '6 Months Road Tax' },
         { duration: '12-months' as const, price: 249.99, description: '12 Months Road Tax' },
+        { duration: 'Direct Debit' as const, price: 35.00, description: 'Direct Debit Payment Option' },
       ];
 
       for (let i = 0; i < defaultOptions.length; i++) {

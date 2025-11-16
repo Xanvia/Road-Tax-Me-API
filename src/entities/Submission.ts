@@ -11,18 +11,21 @@ export class Submission {
   id: string = uuidv4();
 
   @ManyToOne(() => Vehicle)
+  @JoinColumn({ name: 'vehicleId' })
   vehicle: Vehicle;
 
   @Column('uuid')
   vehicleId: string;
 
   @ManyToOne(() => TaxOption)
+  @JoinColumn({ name: 'taxOptionId' })
   taxOption: TaxOption;
 
   @Column('uuid')
   taxOptionId: string;
 
   @OneToOne(() => UserContact, (contact) => contact.submission, { cascade: true })
+  @JoinColumn({ name: 'userContactId' })
   userContact: UserContact;
 
   @Column('uuid', { nullable: true })
@@ -30,9 +33,6 @@ export class Submission {
 
   @OneToOne(() => Payment, (payment) => payment.submission, { nullable: true })
   payment: Payment;
-
-  @Column('uuid', { nullable: true })
-  paymentId: string;
 
   @Column({ type: 'enum', enum: ['pending', 'processing', 'completed', 'failed'], default: 'pending' })
   status: 'pending' | 'processing' | 'completed' | 'failed';

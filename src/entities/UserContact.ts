@@ -1,13 +1,11 @@
-import { Entity, PrimaryColumn, Column, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryColumn, Column, CreateDateColumn, OneToOne } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
+import { Submission } from './Submission';
 
 @Entity('user_contacts')
 export class UserContact {
   @PrimaryColumn('uuid')
   id: string = uuidv4();
-
-  @Column()
-  submissionId: string;
 
   @Column()
   name: string;
@@ -21,8 +19,9 @@ export class UserContact {
   @Column({ nullable: true })
   whatsapp: string;
 
+  @OneToOne(() => Submission, (submission) => submission.userContact)
+  submission: Submission;
+
   @CreateDateColumn()
   createdAt: Date;
-
-  submission?: any;
 }
