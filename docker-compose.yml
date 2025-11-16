@@ -34,41 +34,41 @@ services:
       - road-tax-network
 
   # Backend Application
-  # backend:
-  #   build:
-  #     context: .
-  #     dockerfile: docker/Dockerfile
-  #   container_name: road-tax-api
-  #   environment:
-  #     NODE_ENV: ${NODE_ENV}
-  #     PORT: ${PORT}
-  #     DB_HOST: postgres
-  #     DB_PORT: ${DB_PORT}
-  #     DB_USERNAME: ${DB_USERNAME}
-  #     DB_PASSWORD: ${DB_PASSWORD}
-  #     DB_NAME: ${DB_NAME}
-  #     JWT_SECRET: ${JWT_SECRET}
-  #     JWT_EXPIRY: ${JWT_EXPIRY}
-  #     DVLA_API_KEY: ${DVLA_API_KEY}
-  #     DVLA_PROD_URL: ${DVLA_PROD_URL}
-  #     DVLA_TEST_URL: ${DVLA_TEST_URL}
-  #     STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
-  #     STRIPE_PUBLIC_KEY: ${STRIPE_PUBLIC_KEY}
-  #     STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
-  #     CORS_ORIGIN: ${CORS_ORIGIN}
-  #     LOG_LEVEL: ${LOG_LEVEL}
-  #   ports:
-  #     - "${PORT}:${PORT}"
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #   volumes:
-  #     - ./src:/app/src
-  #   networks:
-  #     - road-tax-network
-  #   restart: unless-stopped
-  #   stdin_open: true
-  #   tty: true
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: road-tax-api
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      PORT: ${PORT}
+      DB_HOST: postgres
+      DB_PORT: ${DB_PORT}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRY: ${JWT_EXPIRY}
+      DVLA_API_KEY: ${DVLA_API_KEY}
+      DVLA_PROD_URL: ${DVLA_PROD_URL}
+      DVLA_TEST_URL: ${DVLA_TEST_URL}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_PUBLIC_KEY: ${STRIPE_PUBLIC_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      CORS_ORIGIN: ${CORS_ORIGIN}
+      LOG_LEVEL: ${LOG_LEVEL}
+    ports:
+      - "${PORT}:${PORT}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./src:/app/src
+    networks:
+      - road-tax-network
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
 
 volumes:
   postgres_data:
