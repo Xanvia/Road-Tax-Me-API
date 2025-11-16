@@ -10,6 +10,8 @@ import dotenv from 'dotenv';
 import { AppDataSource } from './database/connection';
 import { errorHandler } from './middleware/errorHandler';
 import routes from './routes';
+import { Admin } from './entities/Admin';
+import bcrypt from 'bcrypt';
 
 dotenv.config();
 
@@ -41,12 +43,61 @@ app.use('/api', routes);
 // Error handling middleware
 app.use(errorHandler);
 
+// Seed admin user at startup
+const seedAdminUser = async () => {
+  try {
+    const adminRepository = AppDataSource.getRepository(Admin);
+
+    // Check if admin already exists
+    const adminEmail = process.env.SEED_ADMIN_EMAIL;
+    const adminPassword = process.env.SEED_ADMIN_PASSWORD;
+
+    if (!adminEmail || !adminPassword) {
+      console.log('ℹ️  Skipping admin seed: SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD not set');
+      return;
+    }
+
+    const existingAdmin = await adminRepository.findOne({
+      where: { email: adminEmail },
+    });
+
+    if (existingAdmin) {
+      console.log(`ℹ️  Admin user already exists: ${adminEmail}`);
+      return;
+    }
+
+    // Hash password
+    const passwordHash = await bcrypt.hash(adminPassword, 10);
+
+    // Create admin user
+    const admin = adminRepository.create({
+      email: adminEmail,
+      passwordHash,
+      firstName: process.env.SEED_ADMIN_FIRST_NAME || 'Super',
+      lastName: process.env.SEED_ADMIN_LAST_NAME || 'Admin',
+      isActive: true,
+    });
+
+    await adminRepository.save(admin);
+
+    console.log('✅ Admin user created successfully!');
+    console.log(`   Email: ${admin.email}`);
+    console.log(`   Name: ${admin.firstName} ${admin.lastName}`);
+  } catch (error) {
+    console.error('❌ Error seeding admin user:', error);
+    // Don't exit, just log the error
+  }
+};
+
 // Initialize database and start server
 const startServer = async () => {
   try {
     // Initialize TypeORM connection
     await AppDataSource.initialize();
     console.log('Database connection established');
+
+    // Seed admin user
+    await seedAdminUser();
 
     // Start Express server
     app.listen(PORT, () => {
