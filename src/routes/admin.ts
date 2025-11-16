@@ -12,6 +12,7 @@ router.use(authenticate);
 // GET /api/admin/dashboard/statistics
 router.get('/dashboard/statistics', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
+    console.log('Fetching dashboard statistics');
     const statistics = await adminService.getDashboardStatistics();
 
     res.json({

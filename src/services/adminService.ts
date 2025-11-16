@@ -176,7 +176,7 @@ class AdminService {
         where: { status: 'completed' },
       });
 
-      const totalRevenue = payments.reduce((sum, payment) => sum + payment.amount, 0);
+      const totalRevenue = payments.reduce((sum, payment) => sum + Number(payment.amount), 0);
       const conversionRate = totalSubmissions > 0 ? (completedSubmissions / totalSubmissions) * 100 : 0;
 
       return {

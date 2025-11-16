@@ -2,6 +2,7 @@ import { AppDataSource } from '../database/connection';
 import { Submission } from '../entities/Submission';
 import { UserContact } from '../entities/UserContact';
 import { Vehicle } from '../entities/Vehicle';
+import { Payment } from '../entities/Payment';
 import taxCalculator from '../utils/taxCalculator';
 
 export interface CreateSubmissionDTO {
@@ -26,6 +27,7 @@ class SubmissionService {
   private submissionRepository = AppDataSource.getRepository(Submission);
   private userContactRepository = AppDataSource.getRepository(UserContact);
   private vehicleRepository = AppDataSource.getRepository(Vehicle);
+  private paymentRepository = AppDataSource.getRepository(Payment);
 
   /**
    * Calculate tax and total amount based on vehicle data and user preference
@@ -210,13 +212,22 @@ class SubmissionService {
         return false;
       }
 
-      // Delete user contact (cascade)
-      if (submission.userContactId) {
-        await this.userContactRepository.delete(submission.userContactId);
+      const userContactId = submission.userContactId;
+
+      // Delete in correct order to avoid foreign key constraint violations:
+      // 1. Delete payment first (if exists) - payment references submission
+      if (submission.payment) {
+        await this.paymentRepository.delete(submission.payment.id);
       }
 
-      // Delete submission
+      // 2. Delete submission - submission references userContact
       await this.submissionRepository.delete(id);
+
+      // 3. Delete user contact last
+      if (userContactId) {
+        await this.userContactRepository.delete(userContactId);
+      }
+
       console.log(`Submission deleted: ${id}`);
       return true;
     } catch (error) {
