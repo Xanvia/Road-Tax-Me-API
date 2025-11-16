@@ -1,10 +1,12 @@
 import { AppDataSource } from '../database/connection';
 import { Submission } from '../entities/Submission';
 import { UserContact } from '../entities/UserContact';
+import { Vehicle } from '../entities/Vehicle';
+import taxCalculator from '../utils/taxCalculator';
 
 export interface CreateSubmissionDTO {
   vehicleId: string;
-  taxOptionId: string;
+  taxPreference: number; // 1 = 6 months, 2 = 12 months, 3 = Direct Debit
   userContact: {
     name: string;
     email: string;
@@ -23,6 +25,58 @@ export interface UpdateSubmissionDTO {
 class SubmissionService {
   private submissionRepository = AppDataSource.getRepository(Submission);
   private userContactRepository = AppDataSource.getRepository(UserContact);
+  private vehicleRepository = AppDataSource.getRepository(Vehicle);
+
+  /**
+   * Calculate tax and total amount based on vehicle data and user preference
+   */
+  private calculateTaxForSubmission(vehicle: Vehicle, taxPreference: number): {
+    sixMonthTaxRate: number | null;
+    twelveMonthTaxRate: number | null;
+    commissionFee: number;
+    totalAmount: number;
+    taxCalculationNotes: string;
+  } {
+    // Calculate the base tax rates using the vehicle data
+    const taxResult = taxCalculator.calculateVehicleTax(vehicle);
+
+    let commissionFee: number;
+    let totalAmount: number;
+    let selectedTaxRate: number | null;
+
+    switch (taxPreference) {
+      case 1: // 6 months + £50 commission
+        commissionFee = 50;
+        selectedTaxRate = taxResult.sixMonthRate;
+        totalAmount = taxCalculator.calculateWithCommission(selectedTaxRate, commissionFee);
+        break;
+
+      case 2: // 12 months + £50 commission
+        commissionFee = 50;
+        selectedTaxRate = taxResult.twelveMonthRate;
+        totalAmount = taxCalculator.calculateWithCommission(selectedTaxRate, commissionFee);
+        break;
+
+      case 3: // Direct Debit - Commission only (£60)
+        commissionFee = 60;
+        selectedTaxRate = null;
+        totalAmount = commissionFee; // No tax, just commission for direct debit setup
+        break;
+
+      default:
+        commissionFee = 50;
+        selectedTaxRate = taxResult.twelveMonthRate;
+        totalAmount = taxCalculator.calculateWithCommission(selectedTaxRate, commissionFee);
+    }
+
+    return {
+      sixMonthTaxRate: taxResult.sixMonthRate,
+      twelveMonthTaxRate: taxResult.twelveMonthRate,
+      commissionFee,
+      totalAmount,
+      taxCalculationNotes: taxResult.notes || ''
+    };
+  }
 
   async createSubmission(data: CreateSubmissionDTO): Promise<Submission> {
     try {
@@ -36,16 +90,31 @@ class SubmissionService {
 
       await this.userContactRepository.save(userContact);
 
-      // Create submission
-      const submission = this.submissionRepository.create({
-        vehicleId: data.vehicleId,
-        taxOptionId: data.taxOptionId,
-        userContact,
-        userContactId: userContact.id,
-        status: 'pending',
-        userIpAddress: data.userIpAddress,
-        sessionId: data.sessionId,
+      // Get vehicle data for tax calculation
+      const vehicle = await this.vehicleRepository.findOne({
+        where: { id: data.vehicleId }
       });
+
+      if (!vehicle) {
+        throw new Error('Vehicle not found');
+      }
+
+      // Calculate tax amounts based on vehicle data and preference
+      const taxCalculation = this.calculateTaxForSubmission(vehicle, data.taxPreference);
+
+      // Create submission with all required fields
+      const submission = new Submission();
+      submission.vehicle = vehicle;
+      submission.taxPreference = data.taxPreference;
+      submission.sixMonthTaxRate = taxCalculation.sixMonthTaxRate;
+      submission.twelveMonthTaxRate = taxCalculation.twelveMonthTaxRate;
+      submission.commissionFee = taxCalculation.commissionFee;
+      submission.totalAmount = taxCalculation.totalAmount;
+      submission.taxCalculationNotes = taxCalculation.taxCalculationNotes;
+      submission.userContact = userContact;
+      submission.status = 'pending';
+      submission.userIpAddress = data.userIpAddress ?? null;
+      submission.sessionId = data.sessionId ?? null;
 
       await this.submissionRepository.save(submission);
       console.log(`Submission created: ${submission.id}`);
@@ -60,7 +129,7 @@ class SubmissionService {
     try {
       const submission = await this.submissionRepository.findOne({
         where: { id },
-        relations: ['vehicle', 'taxOption', 'userContact', 'payment'],
+        relations: ['vehicle', 'userContact', 'payment'],
       });
       return submission || null;
     } catch (error) {
@@ -109,7 +178,6 @@ class SubmissionService {
     try {
       let query = this.submissionRepository.createQueryBuilder('submission')
         .leftJoinAndSelect('submission.vehicle', 'vehicle')
-        .leftJoinAndSelect('submission.taxOption', 'taxOption')
         .leftJoinAndSelect('submission.userContact', 'userContact')
         .leftJoinAndSelect('submission.payment', 'payment')
         .skip(offset)
@@ -160,7 +228,7 @@ class SubmissionService {
   async getRecentSubmissions(limit: number = 5): Promise<Submission[]> {
     try {
       return await this.submissionRepository.find({
-        relations: ['vehicle', 'taxOption', 'userContact', 'payment'],
+        relations: ['vehicle', 'userContact', 'payment'],
         order: { createdAt: 'DESC' },
         take: limit,
       });

@@ -1,20 +1,27 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import submissionService from '../services/submissionService';
 import vehicleService from '../services/vehicleService';
-import taxOptionService from '../services/taxOptionService';
 
 const router = Router();
 
 // POST /api/submissions
 router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { vehicleId, taxOptionId, userContact } = req.body;
+    const { vehicleId, taxPreference, userContact } = req.body;
 
     // Validate required fields
-    if (!vehicleId || !taxOptionId || !userContact) {
+    if (!vehicleId || !taxPreference || !userContact) {
       return res.status(400).json({
         status: 'error',
-        message: 'vehicleId, taxOptionId, and userContact are required',
+        message: 'vehicleId, taxPreference, and userContact are required',
+      });
+    }
+
+    // Validate taxPreference is 1, 2, or 3
+    if (![1, 2, 3].includes(taxPreference)) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'taxPreference must be 1, 2, or 3',
       });
     }
 
@@ -34,19 +41,10 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
       });
     }
 
-    // Validate tax option exists
-    const taxOption = await taxOptionService.getTaxOptionById(taxOptionId);
-    if (!taxOption) {
-      return res.status(404).json({
-        status: 'error',
-        message: 'Tax option not found',
-      });
-    }
-
     // Create submission
     const submission = await submissionService.createSubmission({
       vehicleId,
-      taxOptionId,
+      taxPreference,
       userContact,
       userIpAddress: req.ip,
       sessionId: req.headers['x-session-id'] as string,

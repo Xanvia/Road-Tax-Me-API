@@ -25,32 +25,36 @@ class PaymentService {
       }
 
       // Check if payment already exists for this submission
-      const existingPayment = await this.paymentRepository.findOne({
+      let existingPayment = await this.paymentRepository.findOne({
         where: { submissionId: data.submissionId },
       });
 
       if (existingPayment) {
         // If payment already exists, return existing client secret if available
         if (existingPayment.metadata?.client_secret) {
+          console.log(`Returning existing payment intent for submission: ${data.submissionId}`);
           return {
             clientSecret: existingPayment.metadata.client_secret,
             paymentIntentId: existingPayment.transactionId,
           };
         }
-        throw new Error('Payment already exists for this submission');
+        throw new Error('Payment already exists for this submission but no client secret found');
       }
 
-      // Create Stripe payment intent
+      // Create Stripe payment intent first (before saving to DB)
+      // Stripe expects form-encoded data, not JSON
+      const params = new URLSearchParams();
+      params.append('amount', Math.round(data.amount * 100).toString()); // Convert to cents
+      params.append('currency', 'gbp');
+      params.append('metadata[submissionId]', data.submissionId);
+
       const response = await axios.post(
         'https://api.stripe.com/v1/payment_intents',
+        params,
         {
-          amount: Math.round(data.amount * 100), // Convert to cents
-          currency: 'gbp',
-          metadata: {
-            submissionId: data.submissionId,
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
           },
-        },
-        {
           auth: {
             username: this.stripeSecretKey,
             password: '',
@@ -59,26 +63,69 @@ class PaymentService {
         }
       );
 
-      // Create payment record
-      const payment = this.paymentRepository.create({
-        submissionId: data.submissionId,
-        amount: data.amount,
-        currency: 'GBP',
-        provider: 'stripe',
-        transactionId: response.data.id,
-        status: 'pending',
-        metadata: response.data,
-      });
+      console.log(`Stripe payment intent created: ${response.data.id}`);
 
-      await this.paymentRepository.save(payment);
-      console.log(`Payment intent created: ${response.data.id}`);
+      // Now save to database - use try-catch to handle race conditions
+      try {
+        const payment = this.paymentRepository.create({
+          submissionId: data.submissionId,
+          amount: data.amount,
+          currency: 'GBP',
+          provider: 'stripe',
+          transactionId: response.data.id,
+          status: 'pending',
+          metadata: response.data,
+        });
 
-      return {
-        clientSecret: response.data.client_secret,
-        paymentIntentId: response.data.id,
-      };
-    } catch (error) {
+        await this.paymentRepository.save(payment);
+        console.log(`Payment record saved for submission: ${data.submissionId}`);
+        
+        return {
+          clientSecret: response.data.client_secret,
+          paymentIntentId: response.data.id,
+        };
+      } catch (dbError: any) {
+        // If duplicate key error, another request beat us to it
+        // Fetch and return the existing payment
+        if (dbError.code === '23505') {
+          console.log(`Race condition detected - fetching existing payment for submission: ${data.submissionId}`);
+          
+          // Wait a bit and try again to ensure the other request has saved
+          await new Promise(resolve => setTimeout(resolve, 100));
+          
+          existingPayment = await this.paymentRepository.findOne({
+            where: { submissionId: data.submissionId },
+          });
+          
+          if (existingPayment?.metadata?.client_secret) {
+            console.log(`Returning existing payment intent after race condition: ${existingPayment.transactionId}`);
+            return {
+              clientSecret: existingPayment.metadata.client_secret,
+              paymentIntentId: existingPayment.transactionId,
+            };
+          }
+        }
+        
+        // If not a duplicate or couldn't find existing payment, re-throw
+        console.error('Database error while saving payment:', dbError);
+        throw dbError;
+      }
+    } catch (error: any) {
       console.error('Error creating payment intent:', error);
+      
+      // Log detailed Stripe error information
+      if (error.response) {
+        console.error('Stripe API Error Details:');
+        console.error('Status:', error.response.status);
+        console.error('Data:', JSON.stringify(error.response.data, null, 2));
+        console.error('Headers:', error.response.headers);
+      }
+      
+      // Throw a more informative error
+      if (error.response?.data?.error) {
+        throw new Error(`Stripe Error: ${error.response.data.error.message || JSON.stringify(error.response.data.error)}`);
+      }
+      
       throw error;
     }
   }

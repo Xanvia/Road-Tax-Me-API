@@ -1,0 +1,130 @@
+{
+  "metadata": {
+    "source": "GOV.UK - Vehicle tax rate tables (PDF provided by user)",
+    "lastUpdated": "2025-11-16"
+  },
+
+  "common": {
+    "luxurySurcharge": {
+      "amount": 425,
+      "appliesForYears": 5,
+      "thresholdListPrice": 40000,
+      "exemption": {
+        "zeroEmission": true,
+        "registeredBefore": "2025-04-01"
+      }
+    }
+  },
+
+  "cars": {
+    "registered_on_or_after_2017-04-01": {
+      "firstYear_by_co2": [
+        { "co2_min": 0,   "co2_max": 0,   "rates": {"standard": 10, "all_other_diesel": 10} },
+        { "co2_min": 1,   "co2_max": 50,  "rates": {"standard": 110, "all_other_diesel": 130} },
+        { "co2_min": 51,  "co2_max": 75,  "rates": {"standard": 130, "all_other_diesel": 270} },
+        { "co2_min": 76,  "co2_max": 90,  "rates": {"standard": 270, "all_other_diesel": 350} },
+        { "co2_min": 91,  "co2_max": 100, "rates": {"standard": 350, "all_other_diesel": 390} },
+        { "co2_min": 101, "co2_max": 110, "rates": {"standard": 390, "all_other_diesel": 440} },
+        { "co2_min": 111, "co2_max": 130, "rates": {"standard": 440, "all_other_diesel": 540} },
+        { "co2_min": 131, "co2_max": 150, "rates": {"standard": 540, "all_other_diesel": 1360} },
+        { "co2_min": 151, "co2_max": 170, "rates": {"standard": 1360, "all_other_diesel": 2190} },
+        { "co2_min": 171, "co2_max": 190, "rates": {"standard": 2190, "all_other_diesel": 3300} },
+        { "co2_min": 191, "co2_max": 225, "rates": {"standard": 3300, "all_other_diesel": 4680} },
+        { "co2_min": 226, "co2_max": 255, "rates": {"standard": 4680, "all_other_diesel": 5490} },
+        { "co2_min": 256, "co2_max": 9999,"rates": {"standard": 5490, "all_other_diesel": 5490} }
+      ],
+      "standard_from_second_year": {
+        "12_month_single": 195,
+        "12_month_direct_debit": 195,
+        "12_month_total_of_12_instalments_by_dd": 204.75,
+        "6_month_single": 107.25,
+        "6_month_direct_debit": 102.38
+      },
+      "luxury_adjusted_rates": {
+        "12_month_single": 620,
+        "12_month_direct_debit": 620,
+        "12_month_total_of_12_instalments_by_dd": 651,
+        "6_month_single": 341,
+        "6_month_direct_debit": 325.50
+      }
+    },
+
+    "registered_2001-03-01_to_2017-03-31": {
+      "bands": [
+        { "band": "A", "co2_min": 0,   "co2_max": 100, "12_month": 20,  "12_month_dd": 20,  "12_month_instalments": 21,   "6_month": null,   "6_month_dd": null },
+        { "band": "B", "co2_min": 101, "co2_max": 110, "12_month": 20,  "12_month_dd": 20,  "12_month_instalments": 21,   "6_month": null,   "6_month_dd": null },
+        { "band": "C", "co2_min": 111, "co2_max": 120, "12_month": 35,  "12_month_dd": 35,  "12_month_instalments": 36.75, "6_month": null,   "6_month_dd": null },
+        { "band": "D", "co2_min": 121, "co2_max": 130, "12_month": 165, "12_month_dd": 165, "12_month_instalments": 173.25, "6_month": 90.75, "6_month_dd": 86.63 },
+        { "band": "E", "co2_min": 131, "co2_max": 140, "12_month": 195, "12_month_dd": 195, "12_month_instalments": 204.75, "6_month": 107.25, "6_month_dd": 102.38 },
+        { "band": "F", "co2_min": 141, "co2_max": 150, "12_month": 215, "12_month_dd": 215, "12_month_instalments": 225.75, "6_month": 118.25, "6_month_dd": 112.88 },
+        { "band": "G", "co2_min": 151, "co2_max": 165, "12_month": 265, "12_month_dd": 265, "12_month_instalments": 278.25, "6_month": 145.75, "6_month_dd": 139.13 },
+        { "band": "H", "co2_min": 166, "co2_max": 175, "12_month": 315, "12_month_dd": 315, "12_month_instalments": 330.75, "6_month": 173.25, "6_month_dd": 165.38 },
+        { "band": "I", "co2_min": 176, "co2_max": 185, "12_month": 345, "12_month_dd": 345, "12_month_instalments": 362.25, "6_month": 189.75, "6_month_dd": 181.13 },
+        { "band": "J", "co2_min": 186, "co2_max": 200, "12_month": 395, "12_month_dd": 395, "12_month_instalments": 414.75, "6_month": 217.25, "6_month_dd": 207.38 },
+        { "band": "K", "co2_min": 201, "co2_max": 225, "12_month": 430, "12_month_dd": 430, "12_month_instalments": 451.50, "6_month": 236.50, "6_month_dd": 225.75 },
+        { "band": "L", "co2_min": 226, "co2_max": 255, "12_month": 735, "12_month_dd": 735, "12_month_instalments": 771.75, "6_month": 404.25, "6_month_dd": 385.88 },
+        { "band": "M", "co2_min": 256, "co2_max": 9999,"12_month": 760, "12_month_dd": 760, "12_month_instalments": 798,    "6_month": 418,    "6_month_dd": 399 }
+      ],
+      "note": "Band K includes cars with CO2 >225g/km registered before 23 March 2006."
+    }
+  },
+
+  "pre_2001": {
+    "cars_and_light_goods": [
+      { "engine_cc_max": 1549, "12_month": 220, "12_month_dd": 220, "12_month_instalments": 231, "6_month": 121, "6_month_dd": 115.5 },
+      { "engine_cc_min": 1550,  "12_month": 360, "12_month_dd": 360, "12_month_instalments": 378, "6_month": 198, "6_month_dd": 189 }
+    ]
+  },
+
+  "motorhomes": {
+    "light_goods_up_to_3500kg": [
+      { "engine_cc_max": 1549, "12_month": 220, "6_month": 121 },
+      { "engine_cc_min": 1550, "12_month": 360, "6_month": 198 }
+    ],
+    "private_heavy_goods_over_3500kg": {
+      "12_month": 171,
+      "12_month_dd": 171,
+      "12_month_instalments": 179.55,
+      "6_month": 94.05,
+      "6_month_dd": 89.78
+    },
+    "special_case_registered_2017-04-01_to_2020-03-11": {
+      "note": "If M1SP and CO2 listed on type approval certificate, use cars CO2-based rates in 'cars.registered_on_or_after_2017-04-01.firstYear_by_co2'."
+    }
+  },
+
+  "other": {
+    "light_goods_tc39": { "12_month": 345, "12_month_dd": 345, "12_month_instalments": 362.25, "6_month": 189.75, "6_month_dd": 181.13 },
+    "euro4_light_goods_tc36": { "12_month": 140, "12_month_dd": 140, "12_month_instalments": 147, "6_month": 77, "6_month_dd": 73.5 },
+    "euro5_light_goods_tc36": { "12_month": 140, "12_month_dd": 140, "12_month_instalments": 147, "6_month": 77, "6_month_dd": 73.5 }
+  },
+
+  "motorcycle_tc17": [
+    { "engine_cc_max": 150, "12_month": 26, "12_month_dd": 26, "12_month_instalments": 27.3 },
+    { "engine_cc_min": 151, "engine_cc_max": 400, "12_month": 57, "12_month_dd": 57, "12_month_instalments": 59.85, "6_month": 31.35, "6_month_dd": 29.93 },
+    { "engine_cc_min": 401, "engine_cc_max": 600, "12_month": 87, "12_month_dd": 87, "12_month_instalments": 91.35, "6_month": 47.85, "6_month_dd": 45.68 },
+    { "engine_cc_min": 601, "12_month": 121, "12_month_dd": 121, "12_month_instalments": 127.05, "6_month": 66.55, "6_month_dd": 63.53 }
+  ],
+
+  "tricycles_tc50": [
+    { "type": "zero_emission", "12_month": 26, "12_month_dd": 26, "12_month_instalments": 27.3 },
+    { "engine_cc_max": 150, "12_month": 26, "12_month_dd": 26, "12_month_instalments": 27.3 },
+    { "other": true, "12_month": 121, "12_month_dd": 121, "12_month_instalments": 127.05, "6_month": 66.55, "6_month_dd": 63.53 }
+  ],
+
+  "trade_licences": [
+    { "apply_month": "January", "valid_until": "June", "valid_for_months": 6,  "rate_all_vehicles": 94.05, "rate_bicycles_tricycles": 65.55 },
+    { "apply_month": "January", "valid_until": "December", "valid_for_months": 12, "rate_all_vehicles": 171, "rate_bicycles_tricycles": 121 },
+    { "apply_month": "February", "valid_until": "December", "valid_for_months": 11, "rate_all_vehicles": 171, "rate_bicycles_tricycles": 121 },
+    { "apply_month": "March", "valid_until": "December", "valid_for_months": 10, "rate_all_vehicles": 156.75, "rate_bicycles_tricycles": 110.90 },
+    { "apply_month": "April", "valid_until": "December", "valid_for_months": 9,  "rate_all_vehicles": 141.05, "rate_bicycles_tricycles": 99.80 },
+    { "apply_month": "May", "valid_until": "December", "valid_for_months": 8,  "rate_all_vehicles": 125.40, "rate_bicycles_tricycles": 88.75 },
+    { "apply_month": "June", "valid_until": "December", "valid_for_months": 7,  "rate_all_vehicles": 109.70, "rate_bicycles_tricycles": 77.65 },
+    { "apply_month": "July", "valid_until": "December", "valid_for_months": 6,  "rate_all_vehicles": 94.05,  "rate_bicycles_tricycles": 66.55 },
+    { "apply_month": "August", "valid_until": "June", "valid_for_months": 11, "rate_all_vehicles": 171, "rate_bicycles_tricycles": 121 },
+    { "apply_month": "September","valid_until": "June","valid_for_months": 10, "rate_all_vehicles": 156.75,"rate_bicycles_tricycles": 110.90 },
+    { "apply_month": "October",  "valid_until": "June","valid_for_months": 9,  "rate_all_vehicles": 141.05, "rate_bicycles_tricycles": 99.80 },
+    { "apply_month": "November", "valid_until": "June","valid_for_months": 8,  "rate_all_vehicles": 125.40, "rate_bicycles_tricycles": 88.75 },
+    { "apply_month": "December", "valid_until": "June","valid_for_months": 7,  "rate_all_vehicles": 109.70, "rate_bicycles_tricycles": 77.65 }
+  ]
+}

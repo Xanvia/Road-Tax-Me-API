@@ -3,7 +3,6 @@ import { AuthRequest, authenticate, authorize } from '../middleware/authenticati
 import adminService from '../services/adminService';
 import submissionService from '../services/submissionService';
 import paymentService from '../services/paymentService';
-import taxOptionService from '../services/taxOptionService';
 
 const router = Router();
 
@@ -233,98 +232,6 @@ router.post('/payments/:id/refund', async (req: AuthRequest, res: Response, next
         message: err.message,
       });
     }
-    next(error);
-  }
-});
-
-// GET /api/admin/tax-options
-router.get('/tax-options', async (req: AuthRequest, res: Response, next: NextFunction) => {
-  try {
-    const taxOptions = await taxOptionService.getAllTaxOptions(false);
-
-    res.json({
-      status: 'success',
-      data: taxOptions,
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// POST /api/admin/tax-options
-router.post('/tax-options', authorize('super_admin'), async (req: AuthRequest, res: Response, next: NextFunction) => {
-  try {
-    const { duration, price, description, isActive, displayOrder } = req.body;
-
-    if (!duration || !price) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'duration and price are required',
-      });
-    }
-
-    const taxOption = await taxOptionService.createTaxOption({
-      duration,
-      price,
-      description,
-      isActive,
-      displayOrder,
-    });
-
-    res.status(201).json({
-      status: 'success',
-      data: taxOption,
-      message: 'Tax option created',
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// PUT /api/admin/tax-options/:id
-router.put('/tax-options/:id', authorize('super_admin'), async (req: AuthRequest, res: Response, next: NextFunction) => {
-  try {
-    const { id } = req.params;
-    const updates = req.body;
-
-    const taxOption = await taxOptionService.updateTaxOption(id, updates);
-
-    if (!taxOption) {
-      return res.status(404).json({
-        status: 'error',
-        message: 'Tax option not found',
-      });
-    }
-
-    res.json({
-      status: 'success',
-      data: taxOption,
-      message: 'Tax option updated',
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// DELETE /api/admin/tax-options/:id
-router.delete('/tax-options/:id', authorize('super_admin'), async (req: AuthRequest, res: Response, next: NextFunction) => {
-  try {
-    const { id } = req.params;
-
-    const deleted = await taxOptionService.deleteTaxOption(id);
-
-    if (!deleted) {
-      return res.status(404).json({
-        status: 'error',
-        message: 'Tax option not found',
-      });
-    }
-
-    res.json({
-      status: 'success',
-      message: 'Tax option deleted',
-    });
-  } catch (error) {
     next(error);
   }
 });
