@@ -11,6 +11,7 @@ RUN npm ci
 
 # Copy source files
 COPY src ./src
+COPY support ./support
 COPY tsconfig.json ./
 
 # Build TypeScript
@@ -35,6 +36,7 @@ RUN npm ci --omit=dev
 
 # Copy built application from builder
 COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
+COPY --from=builder --chown=nodejs:nodejs /app/support ./support
 
 # Switch to non-root user
 USER nodejs
