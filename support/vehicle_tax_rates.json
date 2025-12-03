@@ -19,7 +19,7 @@
   "cars": {
     "registered_on_or_after_2017-04-01": {
       "firstYear_by_co2": [
-        { "co2_min": 0,   "co2_max": 0,   "rates": {"standard": 10, "all_other_diesel": 10} },
+        { "co2_min": 0,   "co2_max": 0,   "rates": {"standard": 360, "all_other_diesel": 360} },
         { "co2_min": 1,   "co2_max": 50,  "rates": {"standard": 110, "all_other_diesel": 130} },
         { "co2_min": 51,  "co2_max": 75,  "rates": {"standard": 130, "all_other_diesel": 270} },
         { "co2_min": 76,  "co2_max": 90,  "rates": {"standard": 270, "all_other_diesel": 350} },
