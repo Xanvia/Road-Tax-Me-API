@@ -1,0 +1,79 @@
+================================================================================
+TAX CALCULATION LOGIC SUMMARY - Road Tax Me API
+================================================================================
+
+MAIN ENTRY POINT: calculateVehicleTax(vehicle)
+Determines which tax system applies based on vehicle registration date, then calls
+the appropriate calculation method.
+
+================================================================================
+TAX SYSTEMS (by registration date):
+================================================================================
+
+1. POST-2017 VEHICLES (Registered on or after 1 April 2017)
+   └─ Entry Point: calculatePost2017Tax()
+   
+   FIRST YEAR TAX:
+   └─ Method: calculateFirstYearTax()
+   - Based on CO2 emissions
+   - CO2 brackets with corresponding rates
+   - Special bracket: 0 CO2 = £10 (zero-emission vehicles)
+   - CO2 1-50g/km = £110-£130
+   - CO2 51-75g/km = £130-£270
+   - CO2 76-90g/km = £270-£350
+   - CO2 91-100g/km = £350-£390
+   - And so on up to CO2 256+g/km = £5,490
+   - Diesel vehicles pay slightly higher rates than standard
+   
+   STANDARD TAX (from Year 2 onwards):
+   └─ Method: calculateStandardTax()
+   - Base rates: £195 (12 months single), £107.25 (6 months)
+   - Checks for luxury surcharge eligibility
+   
+   LUXURY SURCHARGE CHECK:
+   └─ Method: checkLuxurySurcharge()
+   - Applies if list price >= £40,000
+   - Adds £425/year for up to 5 years
+   - EXEMPTION: Zero-emission vehicles (0 CO2) registered before 1 April 2025
+   - Result: Either standard or luxury-adjusted rates (£620 for 12 months)
+
+================================================================================
+
+2. VEHICLES 2001-2017 (Registered 1 March 2001 to 31 March 2017)
+   └─ Entry Point: calculate2001to2017Tax()
+   - Based on CO2 emissions and assigned to tax bands (A-M)
+   - Band A: CO2 0-100g/km = £20 (12 months) or null (6 months)
+   - Band B: CO2 101-110g/km = £20 (12 months) or null (6 months)
+   - Band C: CO2 111-120g/km = £35 (12 months) or null (6 months)
+   - Band D: CO2 121-130g/km = £165 (12 months), £86.63 (6 months)
+   - ... continues through Band M
+   - Band M: CO2 256+g/km = £760 (12 months), £399 (6 months)
+
+================================================================================
+
+3. PRE-2001 VEHICLES (Registered before 1 March 2001)
+   └─ Entry Point: calculatePre2001Tax()
+   - Based on engine capacity (cc), not CO2
+   - Bracket 1: Engine ≤ 1,549cc = £220 (12 months), £115.50 (6 months)
+   - Bracket 2: Engine ≥ 1,550cc = £360 (12 months), £189 (6 months)
+
+================================================================================
+MINIMUM/MAXIMUM TAX:
+================================================================================
+
+- Minimum tax: £10 (zero-emission vehicles, first year only)
+- Maximum tax (without surcharge): £5,490 (high CO2 post-2017 vehicles)
+- Maximum tax (with luxury surcharge): £620 (second year+ post-2017 vehicles)
+- Luxury surcharge: £425/year for 5 years (total £2,125)
+
+================================================================================
+KEY BUSINESS RULES:
+================================================================================
+
+1. First-year tax is always 12 months only (no 6-month option)
+2. Zero-emission vehicles get significant tax breaks but with conditions
+3. Luxury surcharge applies only to expensive vehicles (£40,000+)
+4. Luxury surcharge has a time limit (5 years from registration)
+5. Diesel vehicles pay higher rates in first year (post-2017)
+6. Some 2001-2017 vehicles don't have 6-month payment options (Bands A-C)
+7. Older vehicles (pre-2001) use engine size, not emissions
