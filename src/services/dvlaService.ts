@@ -35,7 +35,27 @@ class DVLAService {
       const isDevelopment = process.env.NODE_ENV === 'development';
 
       if (isDevelopment) {
-        return this.getMockVehicleData(registrationNumber);
+        // Test DVLA API call
+        console.log('Using test DVLA API endpoint');
+        const response = await axios.post(
+          `${this.testUrl}/v1/vehicles`,
+          {
+            registrationNumber: registrationNumber.toUpperCase(),
+          },
+          {
+            headers: {
+              'x-api-key': this.apiKey,
+              'Content-Type': 'application/json',
+            },
+            timeout: 10000,
+          }
+        );
+        console.log(response);
+
+        // If the test API returns data, return it
+        if (response.data) {
+          return response.data;
+        } 
       }
 
       // Production DVLA API call
@@ -54,18 +74,16 @@ class DVLAService {
       );
 
       return response.data;
-    } catch (error) {
-      const axiosError = error as AxiosError;
-      
+    } catch (error: any) {
+      const axiosError = error as AxiosError;      
       if (axiosError.response?.status === 404) {
         throw new Error('Vehicle not found');
       }
 
-      if (axiosError.response?.status === 400) {
+      if (error.message === "Invalid registration number format") {
         throw new Error('Invalid registration format');
       }
 
-      console.error('DVLA API error:', error);
       throw new Error('Failed to lookup vehicle from DVLA');
     }
   }
