@@ -57,9 +57,10 @@ class EmailService {
     userName: string,
     amount: number,
     currency: string,
-    submissionId: string
+    submissionId: string,
+    vehicleId?: string
   ): Promise<{ success: boolean; messageId?: string; error?: string }> {
-    const html = this.getPaymentSuccessTemplate(userName, amount, currency, submissionId);
+    const html = this.getPaymentSuccessTemplate(userName, amount, currency, submissionId, vehicleId);
     return this.sendEmail({
       to: userEmail,
       subject: '✅ Payment Successful - Road Tax Me',
@@ -76,9 +77,10 @@ class EmailService {
     amount: number,
     currency: string,
     submissionId: string,
-    failureReason?: string
+    failureReason?: string,
+    vehicleId?: string
   ): Promise<{ success: boolean; messageId?: string; error?: string }> {
-    const html = this.getPaymentFailureTemplate(userName, amount, currency, submissionId, failureReason);
+    const html = this.getPaymentFailureTemplate(userName, amount, currency, submissionId, failureReason, vehicleId);
     return this.sendEmail({
       to: userEmail,
       subject: '❌ Payment Failed - Road Tax Me',
@@ -93,7 +95,8 @@ class EmailService {
     userName: string,
     amount: number,
     currency: string,
-    submissionId: string
+    submissionId: string,
+    vehicleId?: string
   ): string {
     return `
       <!DOCTYPE html>
@@ -118,7 +121,7 @@ class EmailService {
         <body>
           <div class="container">
             <div class="header">
-              <div class="success-badge">✅</div>
+              <img src="https://roadtaxme.co.uk/assets/logo-Lf88egCT.png" alt="Road Tax Me Logo" style="max-width: 200px; height: auto; margin-bottom: 20px;">
               <h1>Payment Successful!</h1>
             </div>
             
@@ -134,8 +137,12 @@ class EmailService {
                 </div>
                 <div class="detail-row">
                   <span class="detail-label">Submission ID:</span>
-                  <span class="detail-value">${submissionId}</span>
+                  <span class="detail-value">${submissionId.split('-').pop()}</span>
                 </div>
+                ${vehicleId ? `<div class="detail-row">
+                  <span class="detail-label">Vehicle ID:</span>
+                  <span class="detail-value">${vehicleId}</span>
+                </div>` : ''}
                 <div class="detail-row">
                   <span class="detail-label">Transaction Date:</span>
                   <span class="detail-value">${new Date().toLocaleDateString()}</span>
@@ -165,7 +172,8 @@ class EmailService {
     amount: number,
     currency: string,
     submissionId: string,
-    failureReason?: string
+    failureReason?: string,
+    vehicleId?: string
   ): string {
     return `
       <!DOCTYPE html>
@@ -193,7 +201,7 @@ class EmailService {
         <body>
           <div class="container">
             <div class="header">
-              <div class="failure-badge">❌</div>
+              <img src="https://roadtaxme.co.uk/assets/logo-Lf88egCT.png" alt="Road Tax Me Logo" style="max-width: 200px; height: auto; margin-bottom: 20px;">
               <h1>Payment Failed</h1>
             </div>
             
@@ -214,8 +222,12 @@ class EmailService {
                 </div>
                 <div class="detail-row">
                   <span class="detail-label">Submission ID:</span>
-                  <span class="detail-value">${submissionId}</span>
+                  <span class="detail-value">${submissionId.split('-').pop()}</span>
                 </div>
+                ${vehicleId ? `<div class="detail-row">
+                  <span class="detail-label">Vehicle ID:</span>
+                  <span class="detail-value">${vehicleId}</span>
+                </div>` : ''}
                 <div class="detail-row">
                   <span class="detail-label">Failed Date:</span>
                   <span class="detail-value">${new Date().toLocaleDateString()}</span>

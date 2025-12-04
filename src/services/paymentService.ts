@@ -181,10 +181,10 @@ class PaymentService {
       console.log(`   ✅ Payment status updated to: completed`);
 
       // Update submission status
-      console.log(`🔍 Loading submission with user contact...`);
+      console.log(`🔍 Loading submission with user contact and vehicle...`);
       const submission = await this.submissionRepository.findOne({
         where: { id: submissionId },
-        relations: ['userContact'],
+        relations: ['userContact', 'vehicle'],
       });
 
       if (!submission) {
@@ -195,6 +195,7 @@ class PaymentService {
       console.log(`✅ Submission found`);
       console.log(`   Submission status: ${submission.status}`);
       console.log(`   Has user contact: ${!!submission.userContact}`);
+      console.log(`   Has vehicle: ${!!submission.vehicle}`);
       
       submission.status = 'completed';
       await this.submissionRepository.save(submission);
@@ -211,7 +212,8 @@ class PaymentService {
           submission.userContact.name,
           paymentIntent.amount,
           paymentIntent.currency.toUpperCase(),
-          submissionId
+          submissionId,
+          submission.vehicleId
         );
         
         if (emailResult.success) {
@@ -265,10 +267,10 @@ class PaymentService {
       console.log(`   ✅ Payment status updated to: failed`);
 
       // Update submission status
-      console.log(`🔍 Loading submission with user contact...`);
+      console.log(`🔍 Loading submission with user contact and vehicle...`);
       const submission = await this.submissionRepository.findOne({
         where: { id: submissionId },
-        relations: ['userContact'],
+        relations: ['userContact', 'vehicle'],
       });
 
       if (!submission) {
@@ -279,6 +281,7 @@ class PaymentService {
       console.log(`✅ Submission found`);
       console.log(`   Submission status: ${submission.status}`);
       console.log(`   Has user contact: ${!!submission.userContact}`);
+      console.log(`   Has vehicle: ${!!submission.vehicle}`);
       
       submission.status = 'failed';
       await this.submissionRepository.save(submission);
@@ -297,7 +300,8 @@ class PaymentService {
           paymentIntent.amount,
           paymentIntent.currency.toUpperCase(),
           submissionId,
-          failureReason
+          failureReason,
+          submission.vehicleId
         );
         
         if (emailResult.success) {
@@ -394,7 +398,7 @@ class PaymentService {
         // Also update submission status and send email if completed
         const submission = await this.submissionRepository.findOne({
           where: { id: submissionId },
-          relations: ['userContact'],
+          relations: ['userContact', 'vehicle'],
         });
         if (submission && mappedStatus === 'completed') {
           submission.status = 'completed';
@@ -411,7 +415,8 @@ class PaymentService {
               submission.userContact.name,
               stripePaymentIntent.amount,
               stripePaymentIntent.currency.toUpperCase(),
-              submissionId
+              submissionId,
+              submission.vehicle.registrationNumber
             );
             
             if (emailResult.success) {
