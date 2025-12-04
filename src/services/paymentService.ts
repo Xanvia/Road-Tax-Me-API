@@ -391,13 +391,37 @@ class PaymentService {
         payment.status = mappedStatus;
         await this.paymentRepository.save(payment);
 
-        // Also update submission status
+        // Also update submission status and send email if completed
         const submission = await this.submissionRepository.findOne({
           where: { id: submissionId },
+          relations: ['userContact'],
         });
         if (submission && mappedStatus === 'completed') {
           submission.status = 'completed';
           await this.submissionRepository.save(submission);
+
+          // Send success email
+          console.log(`\n📧 Payment completed via status polling - sending email`);
+          if (submission.userContact?.email) {
+            console.log(`   Recipient: ${submission.userContact.email}`);
+            console.log(`   Name: ${submission.userContact.name}`);
+            
+            const emailResult = await emailService.sendPaymentSuccessEmail(
+              submission.userContact.email,
+              submission.userContact.name,
+              stripePaymentIntent.amount,
+              stripePaymentIntent.currency.toUpperCase(),
+              submissionId
+            );
+            
+            if (emailResult.success) {
+              console.log(`✅ Success email sent with message ID: ${emailResult.messageId}`);
+            } else {
+              console.error(`⚠️  Failed to send success email: ${emailResult.error}`);
+            }
+          } else {
+            console.warn(`⚠️  No email address found for submission ${submissionId}`);
+          }
         }
       }
 
