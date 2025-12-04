@@ -55,10 +55,13 @@ router.post('/create-intent', async (req: Request, res: Response, next: NextFunc
 // Note: This endpoint needs raw body, configured in index.ts
 router.post('/webhook/stripe', async (req: Request, res: Response, next: NextFunction) => {  
   try {
+    console.log('\n🔔 Stripe Webhook endpoint hit');
+    
     const signature = req.headers['stripe-signature'];
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
     if (!signature) {
+      console.error('❌ Missing stripe-signature header');
       return res.status(400).json({
         status: 'error',
         message: 'Missing stripe-signature header',
@@ -77,11 +80,13 @@ router.post('/webhook/stripe', async (req: Request, res: Response, next: NextFun
 
     try {
       // Verify webhook signature
+      console.log('🔐 Verifying webhook signature...');
       event = stripe.webhooks.constructEvent(
         req.body,
         signature as string,
         webhookSecret
       );
+      console.log('✅ Webhook signature verified');
     } catch (err: any) {
       console.error('Webhook signature verification failed:', err.message);
       return res.status(400).json({
@@ -91,6 +96,7 @@ router.post('/webhook/stripe', async (req: Request, res: Response, next: NextFun
     }
 
     // Process the verified event
+    console.log(`\n📨 Processing webhook event: ${event.type}`);
     await paymentService.handleStripeWebhook(event);
 
     res.json({
@@ -98,6 +104,7 @@ router.post('/webhook/stripe', async (req: Request, res: Response, next: NextFun
       message: 'Webhook received',
     });
   } catch (error) {
+    console.error('❌ Webhook error:', error);
     next(error);
   }
 });

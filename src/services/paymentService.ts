@@ -2,6 +2,7 @@ import axios from 'axios';
 import { AppDataSource } from '../database/connection';
 import { Payment } from '../entities/Payment';
 import { Submission } from '../entities/Submission';
+import emailService from './emailService';
 
 export interface CreatePaymentIntentDTO {
   submissionId: string;
@@ -12,7 +13,7 @@ class PaymentService {
   private paymentRepository = AppDataSource.getRepository(Payment);
   private submissionRepository = AppDataSource.getRepository(Submission);
   private stripeSecretKey = process.env.STRIPE_SECRET_KEY || '';
-  private stripeWebhookSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
+  // private stripeWebhookSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
 
   async createPaymentIntent(data: CreatePaymentIntentDTO): Promise<{ clientSecret: string; paymentIntentId: string }> {
     try {
@@ -125,6 +126,9 @@ class PaymentService {
 
   async handleStripeWebhook(event: any): Promise<void> {
     try {
+      console.log(`\n🔔 Webhook Event Received: ${event.type}`);
+      console.log(`Event ID: ${event.id}`);
+      
       switch (event.type) {
         case 'payment_intent.succeeded':
           console.log('✅ Handling payment_intent.succeeded');
@@ -150,10 +154,13 @@ class PaymentService {
       const submissionId = paymentIntent.metadata.submissionId;
       const transactionId = paymentIntent.id;
       
-      console.log(`💳 Processing successful payment:`);
+      console.log(`\n💳 Processing successful payment:`);
+      console.log(`   Transaction ID: ${transactionId}`);
+      console.log(`   Submission ID: ${submissionId}`);
       console.log(`   Amount: ${paymentIntent.amount / 100} ${paymentIntent.currency.toUpperCase()}`);
 
       // Find payment
+      console.log(`🔍 Looking for payment record...`);
       const payment = await this.paymentRepository.findOne({
         where: { transactionId },
       });
@@ -163,27 +170,66 @@ class PaymentService {
         return;
       }
 
+      console.log(`✅ Payment record found`);
       console.log(`   Current DB status: ${payment.status}`);
 
       // Update payment status
+      console.log(`📝 Updating payment status to completed...`);
       payment.status = 'completed';
       payment.metadata = { ...payment.metadata, ...paymentIntent };
       await this.paymentRepository.save(payment);
       console.log(`   ✅ Payment status updated to: completed`);
 
       // Update submission status
+      console.log(`🔍 Loading submission with user contact...`);
       const submission = await this.submissionRepository.findOne({
         where: { id: submissionId },
+        relations: ['userContact'],
       });
 
-      if (submission) {
-        submission.status = 'completed';
-        await this.submissionRepository.save(submission);
-      } else {
+      if (!submission) {
         console.error(`❌ Submission not found: ${submissionId}`);
+        return;
+      }
+
+      console.log(`✅ Submission found`);
+      console.log(`   Submission status: ${submission.status}`);
+      console.log(`   Has user contact: ${!!submission.userContact}`);
+      
+      submission.status = 'completed';
+      await this.submissionRepository.save(submission);
+      console.log(`   ✅ Submission status updated to: completed`);
+
+      // Send success email
+      if (submission.userContact?.email) {
+        console.log(`\n📧 Email sending initiated`);
+        console.log(`   Recipient: ${submission.userContact.email}`);
+        console.log(`   Name: ${submission.userContact.name}`);
+        
+        const emailResult = await emailService.sendPaymentSuccessEmail(
+          submission.userContact.email,
+          submission.userContact.name,
+          paymentIntent.amount,
+          paymentIntent.currency.toUpperCase(),
+          submissionId
+        );
+        
+        if (emailResult.success) {
+          console.log(`✅ Success email sent with message ID: ${emailResult.messageId}`);
+        } else {
+          console.error(`⚠️  Failed to send success email: ${emailResult.error}`);
+        }
+      } else {
+        console.warn(`⚠️  No email address found for submission ${submissionId}`);
+        if (submission.userContact) {
+          console.warn(`   UserContact exists but email is missing`);
+        } else {
+          console.warn(`   UserContact is null/undefined`);
+        }
       }
     } catch (error) {
       console.error('❌ Error handling payment succeeded:', error);
+      console.error(`Stack:`, (error as any).stack);
       throw error;
     }
   }
@@ -193,8 +239,12 @@ class PaymentService {
       const submissionId = paymentIntent.metadata.submissionId;
       const transactionId = paymentIntent.id;
       
-      console.log(`❌ Processing failed payment:`);
+      console.log(`\n❌ Processing failed payment:`);
+      console.log(`   Transaction ID: ${transactionId}`);
+      console.log(`   Submission ID: ${submissionId}`);
+      
       // Find payment
+      console.log(`🔍 Looking for payment record...`);
       const payment = await this.paymentRepository.findOne({
         where: { transactionId },
       });
@@ -204,27 +254,68 @@ class PaymentService {
         return;
       }
 
+      console.log(`✅ Payment record found`);
       console.log(`   Current DB status: ${payment.status}`);
 
       // Update payment status
+      console.log(`📝 Updating payment status to failed...`);
       payment.status = 'failed';
       payment.metadata = { ...payment.metadata, ...paymentIntent };
       await this.paymentRepository.save(payment);
       console.log(`   ✅ Payment status updated to: failed`);
 
       // Update submission status
+      console.log(`🔍 Loading submission with user contact...`);
       const submission = await this.submissionRepository.findOne({
         where: { id: submissionId },
+        relations: ['userContact'],
       });
 
-      if (submission) {
-        submission.status = 'failed';
-        await this.submissionRepository.save(submission);
-      } else {
+      if (!submission) {
         console.error(`❌ Submission not found: ${submissionId}`);
+        return;
+      }
+
+      console.log(`✅ Submission found`);
+      console.log(`   Submission status: ${submission.status}`);
+      console.log(`   Has user contact: ${!!submission.userContact}`);
+      
+      submission.status = 'failed';
+      await this.submissionRepository.save(submission);
+      console.log(`   ✅ Submission status updated to: failed`);
+
+      // Send failure email
+      if (submission.userContact?.email) {
+        console.log(`\n📧 Email sending initiated`);
+        console.log(`   Recipient: ${submission.userContact.email}`);
+        console.log(`   Name: ${submission.userContact.name}`);
+        
+        const failureReason = paymentIntent.last_payment_error?.message || 'Payment was declined';
+        const emailResult = await emailService.sendPaymentFailureEmail(
+          submission.userContact.email,
+          submission.userContact.name,
+          paymentIntent.amount,
+          paymentIntent.currency.toUpperCase(),
+          submissionId,
+          failureReason
+        );
+        
+        if (emailResult.success) {
+          console.log(`✅ Failure email sent with message ID: ${emailResult.messageId}`);
+        } else {
+          console.error(`⚠️  Failed to send failure email: ${emailResult.error}`);
+        }
+      } else {
+        console.warn(`⚠️  No email address found for submission ${submissionId}`);
+        if (submission.userContact) {
+          console.warn(`   UserContact exists but email is missing`);
+        } else {
+          console.warn(`   UserContact is null/undefined`);
+        }
       }
     } catch (error) {
       console.error('❌ Error handling payment failed:', error);
+      console.error(`Stack:`, (error as any).stack);
       throw error;
     }
   }
