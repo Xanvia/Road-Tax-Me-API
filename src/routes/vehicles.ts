@@ -21,11 +21,11 @@ router.post('/lookup', async (req: Request, res: Response, next: NextFunction) =
       const cachedVehicle = await vehicleService.getVehicleByRegistration(registrationNumber);
       
       if (cachedVehicle) {
-        // Check if cached data is recent (less than 30 days old)
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        // Check if cached data is recent (less than 1 day old)
+        const oneDayAgo = new Date();
+        oneDayAgo.setDate(oneDayAgo.getDate() - 1);
         
-        if (cachedVehicle.updatedAt > thirtyDaysAgo) {
+        if (cachedVehicle.updatedAt > oneDayAgo) {
           return res.json({
             status: 'success',
             data: cachedVehicle,
