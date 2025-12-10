@@ -41,9 +41,14 @@ export class TaxCalculator {
    * Extract registration date from vehicle data
    */
   private extractRegistrationDate(vehicle: Vehicle): Date | null {
-    if (vehicle.yearOfManufacture) {
-      // Use year of manufacture as approximation
-      return new Date(`${vehicle.yearOfManufacture}-01-01`);
+    // First, try to use monthOfFirstRegistration from DVLA data if available
+    if (vehicle.dvlaData?.monthOfFirstRegistration) {
+      const monthStr = vehicle.dvlaData.monthOfFirstRegistration; // Format: YYYY-MM
+      try {
+        return new Date(monthStr + '-01');
+      } catch {
+        // Fall through to other methods
+      }
     }
 
     // Try to extract from registration number (UK format)
@@ -55,13 +60,14 @@ export class TaxCalculator {
       const regNumber = parseInt(newFormatMatch[1]);
       let year, month;
       
-      if (regNumber >= 51) {
-        // September registration (e.g., 51 = Sep 2001, 71 = Sep 2021)
+      if (regNumber >= 50) {
+        // September registration (e.g., 50 = Sep 2000, 67 = Sep 2017, 99 = Sep 2049)
         year = 2000 + (regNumber - 50);
         month = 9;
       } else {
-        // March registration (e.g., 12 = Mar 2012, 23 = Mar 2023)
-        year = 2000 + regNumber;
+        // March registration (e.g., 00 = Mar 2050, 12 = Mar 2012 handled differently)
+        // For March registrations 00-49: these represent 2050-2099
+        year = 2050 + regNumber;
         month = 3;
       }
       
@@ -74,6 +80,11 @@ export class TaxCalculator {
       const letter = reg.charAt(0);
       const year = 1983 + (letter.charCodeAt(0) - 'A'.charCodeAt(0));
       return new Date(year, 7, 1); // August
+    }
+
+    // Last resort: use year of manufacture as approximation
+    if (vehicle.yearOfManufacture) {
+      return new Date(`${vehicle.yearOfManufacture}-01-01`);
     }
 
     return null;
@@ -126,8 +137,8 @@ export class TaxCalculator {
 
     return {
       sixMonthRate: isEuro6OrAbove 
-        ? this.taxRates.other.light_goods_tc39['6_month_dd']
-        : this.taxRates.other.euro5_light_goods_tc36['6_month_dd'],
+        ? this.taxRates.other.light_goods_tc39['6_month']
+        : this.taxRates.other.euro5_light_goods_tc36['6_month'],
       twelveMonthRate: rate,
       isFirstYear: false,
       notes
@@ -181,7 +192,7 @@ export class TaxCalculator {
     }
 
     return {
-      sixMonthRate: rates['6_month_direct_debit'],
+      sixMonthRate: rates['6_month_single'],
       twelveMonthRate: rates['12_month_single'],
       isFirstYear: false,
       notes: luxuryApplies ? 'Includes luxury vehicle surcharge' : 'Standard rate'
@@ -229,7 +240,7 @@ export class TaxCalculator {
     for (const band of bands) {
       if (co2 >= band.co2_min && co2 <= band.co2_max) {
         return {
-          sixMonthRate: band['6_month_dd'],
+          sixMonthRate: band['6_month'],
           twelveMonthRate: band['12_month'],
           isFirstYear: false,
           band: band.band,
@@ -256,14 +267,14 @@ export class TaxCalculator {
     for (const bracket of rates) {
       if (bracket.engine_cc_max && engineCapacity <= bracket.engine_cc_max) {
         return {
-          sixMonthRate: bracket['6_month_dd'],
+          sixMonthRate: bracket['6_month'],
           twelveMonthRate: bracket['12_month'],
           isFirstYear: false,
           notes: `Based on engine capacity: ${engineCapacity}cc`
         };
       } else if (bracket.engine_cc_min && engineCapacity >= bracket.engine_cc_min) {
         return {
-          sixMonthRate: bracket['6_month_dd'],
+          sixMonthRate: bracket['6_month'],
           twelveMonthRate: bracket['12_month'],
           isFirstYear: false,
           notes: `Based on engine capacity: ${engineCapacity}cc`
