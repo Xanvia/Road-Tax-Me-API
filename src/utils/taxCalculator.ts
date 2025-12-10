@@ -83,6 +83,11 @@ export class TaxCalculator {
    * Calculate tax for vehicles registered on or after 1 April 2017
    */
   private calculatePost2017Tax(vehicle: Vehicle, registrationDate: Date): TaxCalculationResult {
+    // Check if this is an N1 light goods vehicle
+    if (vehicle.typeApproval === 'N1') {
+      return this.calculateN1Tax(vehicle);
+    }
+
     const today = new Date();
     const oneYearAfterReg = new Date(registrationDate);
     oneYearAfterReg.setFullYear(oneYearAfterReg.getFullYear() + 1);
@@ -96,6 +101,37 @@ export class TaxCalculator {
       // Standard rates from second year onwards
       return this.calculateStandardTax(vehicle);
     }
+  }
+
+  /**
+   * Calculate tax for N1 light goods vehicles
+   */
+  private calculateN1Tax(vehicle: Vehicle): TaxCalculationResult {
+    const euroStatus = vehicle.euroStatus?.toLowerCase() || '';
+    
+    // N1 vehicles with EURO 5 or below use euro5_light_goods_tc36 rate (£140)
+    // N1 vehicles with EURO 6 or above use light_goods_tc39 rate (£345)
+    const isEuro6OrAbove = euroStatus.includes('euro 6') || euroStatus.includes('euro6');
+    
+    let rate;
+    let notes;
+    
+    if (isEuro6OrAbove) {
+      rate = this.taxRates.other.light_goods_tc39['12_month'];
+      notes = 'N1 light goods vehicle (EURO 6+) - tc39 rate';
+    } else {
+      rate = this.taxRates.other.euro5_light_goods_tc36['12_month'];
+      notes = 'N1 light goods vehicle (EURO 5 or below) - tc36 rate';
+    }
+
+    return {
+      sixMonthRate: isEuro6OrAbove 
+        ? this.taxRates.other.light_goods_tc39['6_month_dd']
+        : this.taxRates.other.euro5_light_goods_tc36['6_month_dd'],
+      twelveMonthRate: rate,
+      isFirstYear: false,
+      notes
+    };
   }
 
   /**

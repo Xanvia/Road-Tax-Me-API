@@ -32,7 +32,8 @@ class DVLAService {
 
       // In production, use actual DVLA endpoint
       // For now, we'll use mock data for development
-      const isDevelopment = process.env.NODE_ENV === 'development';
+      // const isDevelopment = process.env.NODE_ENV === 'development';
+      const isDevelopment = false;
 
       if (isDevelopment) {
         // Test DVLA API call
