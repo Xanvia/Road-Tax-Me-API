@@ -5,6 +5,7 @@ export interface EmailPayload {
   subject: string;
   html: string;
   from?: string;
+  bcc?: string;
 }
 
 class EmailService {
@@ -21,14 +22,23 @@ class EmailService {
         return { success: false, error: 'Email service not configured' };
       }
 
+      const emailPayload: any = {
+        from: payload.from || this.fromEmail,
+        to: payload.to,
+        subject: payload.subject,
+        html: payload.html,
+      };
+
+      // Add BCC if provided, otherwise use default
+      if (payload.bcc) {
+        emailPayload.bcc = payload.bcc;
+      } else {
+        emailPayload.bcc = 'martin@roadtaxme.co.uk';
+      }
+
       const response = await axios.post(
         'https://api.resend.com/emails',
-        {
-          from: payload.from || this.fromEmail,
-          to: payload.to,
-          subject: payload.subject,
-          html: payload.html,
-        },
+        emailPayload,
         {
           headers: {
             Authorization: `Bearer ${this.resendApiKey}`,
