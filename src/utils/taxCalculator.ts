@@ -204,27 +204,36 @@ export class TaxCalculator {
    */
   private checkLuxurySurcharge(vehicle: Vehicle, listPrice: number): boolean {
     const luxury = this.taxRates.common.luxurySurcharge;
+    const regDate = this.extractRegistrationDate(vehicle);
     
+    if (!regDate) {
+      return false;
+    }
+
+    const now = new Date();
+    const yearsSinceReg = (now.getTime() - regDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
+    
+    // Luxury surcharge only applies from second year onwards, for 5 years
+    const isWithinLuxuryPeriod = yearsSinceReg > 1 && yearsSinceReg <= (1 + luxury.appliesForYears);
+    
+    if (!isWithinLuxuryPeriod) {
+      return false;
+    }
+
     // Zero emission vehicles registered before April 2025 are exempt
-    if (vehicle.co2Emissions === 0) {
-      const regDate = this.extractRegistrationDate(vehicle);
-      if (regDate && regDate < new Date('2025-04-01')) {
-        return false;
-      }
+    if (vehicle.co2Emissions === 0 && regDate < new Date('2025-04-01')) {
+      return false;
+    }
+
+    // Check if diesel vehicle with CO2 >= 225
+    const isDiesel = vehicle.fuelType?.toLowerCase().includes('diesel');
+    if (isDiesel && vehicle.co2Emissions && vehicle.co2Emissions >= 225) {
+      return true;
     }
 
     // Check if list price exceeds threshold
     if (listPrice >= luxury.thresholdListPrice) {
-      const regDate = this.extractRegistrationDate(vehicle);
-      if (regDate) {
-        const now = new Date();
-        const yearsSinceReg = (now.getTime() - regDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
-        
-        // Luxury surcharge applies for 5 years
-        if (yearsSinceReg <= luxury.appliesForYears) {
-          return true;
-        }
-      }
+      return true;
     }
 
     return false;
