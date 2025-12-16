@@ -122,7 +122,10 @@ export class TaxCalculator {
     
     // N1 vehicles with EURO 5 or below use euro5_light_goods_tc36 rate (£140)
     // N1 vehicles with EURO 6 or above use light_goods_tc39 rate (£345)
-    const isEuro6OrAbove = euroStatus.includes('euro 6') || euroStatus.includes('euro6');
+    // Default to EURO 6+ if euroStatus is not provided
+    const isEuro5OrBelow = euroStatus.includes('euro 5') || euroStatus.includes('euro5') || 
+                           euroStatus.includes('euro 4') || euroStatus.includes('euro4');
+    const isEuro6OrAbove = !isEuro5OrBelow; // Default to EURO 6+ when unknown
     
     let rate;
     let notes;
@@ -243,6 +246,11 @@ export class TaxCalculator {
    * Calculate tax for vehicles registered between 1 March 2001 and 31 March 2017
    */
   private calculate2001to2017Tax(vehicle: Vehicle): TaxCalculationResult {
+    // Check if this is an N1 light goods vehicle
+    if (vehicle.typeApproval === 'N1') {
+      return this.calculateN1Tax(vehicle);
+    }
+
     const co2 = vehicle.co2Emissions || 0;
     const bands = this.taxRates.cars['registered_2001-03-01_to_2017-03-31'].bands;
 
@@ -270,6 +278,11 @@ export class TaxCalculator {
    * Calculate tax for vehicles registered before 1 March 2001
    */
   private calculatePre2001Tax(vehicle: Vehicle): TaxCalculationResult {
+    // Check if this is an N1 light goods vehicle
+    if (vehicle.typeApproval === 'N1') {
+      return this.calculateN1Tax(vehicle);
+    }
+
     const engineCapacity = vehicle.engineCapacity || 0;
     const rates = this.taxRates.pre_2001.cars_and_light_goods;
 

@@ -32,8 +32,8 @@ class DVLAService {
 
       // In production, use actual DVLA endpoint
       // For now, we'll use mock data for development
-      const isDevelopment = process.env.NODE_ENV === 'development';
-      // const isDevelopment = false;
+      // const isDevelopment = process.env.NODE_ENV === 'development';
+      const isDevelopment = false;
 
       if (isDevelopment) {
         // Test DVLA API call
@@ -92,8 +92,9 @@ class DVLAService {
   private isValidRegistration(registration: string): boolean {
     // UK registration format validation
     // Format: XXX YYY or XXXXYYY
-    const pattern = /^[A-Z]{2}\d{2}\s?[A-Z]{3}$|^[A-Z]{3}\d{3}[A-Z]$|^[A-Z]\d[A-Z]\s?\d[A-Z]{3}$/;
-    return pattern.test(registration.toUpperCase());
+    // const pattern = /^[A-Z]{2}\d{2}\s?[A-Z]{3}$|^[A-Z]{3}\d{3}[A-Z]$|^[A-Z]\d[A-Z]\s?\d[A-Z]{3}$/;
+    // return pattern.test(registration.toUpperCase());
+    return registration.length >= 2 && registration.length <= 10;
   }
 
   private getMockVehicleData(registration: string): DVLAResponse {

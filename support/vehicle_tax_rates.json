@@ -51,9 +51,9 @@
 
     "registered_2001-03-01_to_2017-03-31": {
       "bands": [
-        { "band": "A", "co2_min": 0,   "co2_max": 100, "12_month": 20,  "12_month_dd": 20,  "12_month_instalments": 21,   "6_month": null,   "6_month_dd": null },
-        { "band": "B", "co2_min": 101, "co2_max": 110, "12_month": 20,  "12_month_dd": 20,  "12_month_instalments": 21,   "6_month": null,   "6_month_dd": null },
-        { "band": "C", "co2_min": 111, "co2_max": 120, "12_month": 35,  "12_month_dd": 35,  "12_month_instalments": 36.75, "6_month": null,   "6_month_dd": null },
+        { "band": "A", "co2_min": 0,   "co2_max": 100, "12_month": 20,  "12_month_dd": 20,  "12_month_instalments": 173.25,   "6_month": 90.75,   "6_month_dd": 86.63 },
+        { "band": "B", "co2_min": 101, "co2_max": 110, "12_month": 20,  "12_month_dd": 20,  "12_month_instalments": 173.25,   "6_month": 90.75,   "6_month_dd": 86.63 },
+        { "band": "C", "co2_min": 111, "co2_max": 120, "12_month": 35,  "12_month_dd": 35,  "12_month_instalments": 173.25, "6_month": 90.75,   "6_month_dd": 86.63 },
         { "band": "D", "co2_min": 121, "co2_max": 130, "12_month": 165, "12_month_dd": 165, "12_month_instalments": 173.25, "6_month": 90.75, "6_month_dd": 86.63 },
         { "band": "E", "co2_min": 131, "co2_max": 140, "12_month": 195, "12_month_dd": 195, "12_month_instalments": 204.75, "6_month": 107.25, "6_month_dd": 102.38 },
         { "band": "F", "co2_min": 141, "co2_max": 150, "12_month": 215, "12_month_dd": 215, "12_month_instalments": 225.75, "6_month": 118.25, "6_month_dd": 112.88 },
