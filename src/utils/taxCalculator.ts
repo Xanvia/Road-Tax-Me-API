@@ -183,12 +183,19 @@ export class TaxCalculator {
   private calculateStandardTax(vehicle: Vehicle): TaxCalculationResult {
     const co2 = vehicle.co2Emissions || 0;
     const listPrice = vehicle.dvlaData?.listPrice || 0;
+    const regDate = this.extractRegistrationDate(vehicle);
 
     // Check if luxury surcharge applies
     const luxuryApplies = this.checkLuxurySurcharge(vehicle, listPrice);
 
     let rates;
-    if (luxuryApplies) {
+    const isZeroEmission = co2 === 0;
+    const isRegisteredOnOrAfterApril2025 = regDate && regDate >= new Date('2025-04-01');
+
+    if (isZeroEmission && isRegisteredOnOrAfterApril2025) {
+      const zeroEmissionRates = this.taxRates.cars['zero_emission_registered_on_or_after_2025-04-01'];
+      rates = luxuryApplies ? zeroEmissionRates.luxury_rate : zeroEmissionRates.standard_rate;
+    } else if (luxuryApplies) {
       rates = this.taxRates.cars['registered_on_or_after_2017-04-01'].luxury_adjusted_rates;
     } else {
       rates = this.taxRates.cars['registered_on_or_after_2017-04-01'].standard_from_second_year;
