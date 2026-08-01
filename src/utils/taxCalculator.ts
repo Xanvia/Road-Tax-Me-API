@@ -221,6 +221,15 @@ export class TaxCalculator {
     }
 
     const now = new Date();
+    
+    // Check if DVLA explicitly flagged Additional Rate of Tax (Expensive Car Supplement) via artEndDate
+    if (vehicle.dvlaData?.artEndDate) {
+      const artEndDate = new Date(vehicle.dvlaData.artEndDate);
+      if (!isNaN(artEndDate.getTime()) && now <= artEndDate) {
+        return true;
+      }
+    }
+
     const yearsSinceReg = (now.getTime() - regDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
     
     // Luxury surcharge only applies from appliesFromYear onwards, until appliesUntilYear
