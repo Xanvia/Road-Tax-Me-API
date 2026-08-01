@@ -223,15 +223,16 @@ export class TaxCalculator {
     const now = new Date();
     const yearsSinceReg = (now.getTime() - regDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
     
-    // Luxury surcharge only applies from second year onwards, for 5 years
-    const isWithinLuxuryPeriod = yearsSinceReg > 1 && yearsSinceReg <= (1 + luxury.appliesForYears);
+    // Luxury surcharge only applies from appliesFromYear onwards, until appliesUntilYear
+    const isWithinLuxuryPeriod = yearsSinceReg > (luxury.appliesFromYear - 1) && yearsSinceReg <= luxury.appliesUntilYear;
     
     if (!isWithinLuxuryPeriod) {
       return false;
     }
 
-    // Zero emission vehicles registered before April 2025 are exempt
-    if (vehicle.co2Emissions === 0 && regDate < new Date('2025-04-01')) {
+    // Zero emission vehicles registered before zeroEmissionAppliesFrom are exempt
+    const isZeroEmission = vehicle.co2Emissions === 0;
+    if (isZeroEmission && regDate < new Date(luxury.zeroEmissionAppliesFrom)) {
       return false;
     }
 
@@ -242,7 +243,11 @@ export class TaxCalculator {
     }
 
     // Check if list price exceeds threshold
-    if (listPrice >= luxury.thresholdListPrice) {
+    const threshold = isZeroEmission
+      ? luxury.thresholdListPrice.zeroEmission
+      : luxury.thresholdListPrice.standard;
+
+    if (listPrice >= threshold) {
       return true;
     }
 

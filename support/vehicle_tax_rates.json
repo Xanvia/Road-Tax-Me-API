@@ -6,12 +6,14 @@
   "common": {
     "luxurySurcharge": {
       "amount": 440,
-      "appliesForYears": 5,
-      "thresholdListPrice": 50000,
-      "exemption": {
-        "zeroEmission": true,
-        "registeredBefore": "2026-04-01"
-      }
+      "appliesFromYear": 2,
+      "appliesUntilYear": 6,
+      "durationYears": 5,
+      "thresholdListPrice": {
+        "standard": 40000,
+        "zeroEmission": 50000
+      },
+      "zeroEmissionAppliesFrom": "2025-04-01"
     }
   },
   "cars": {
