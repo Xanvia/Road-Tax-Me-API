@@ -1,8 +1,19 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import dvlaService from '../services/dvlaService';
 import vehicleService from '../services/vehicleService';
+import taxCalculator from '../utils/taxCalculator';
+import { Vehicle } from '../entities/Vehicle';
 
 const router = Router();
+
+const serializeVehicleWithTax = (vehicle: Vehicle) => {
+  const taxResult = taxCalculator.calculateVehicleTax(vehicle);
+  return {
+    ...JSON.parse(JSON.stringify(vehicle)),
+    sixMonthTaxRate: taxResult.sixMonthRate,
+    twelveMonthTaxRate: taxResult.twelveMonthRate,
+  };
+};
 
 // POST /api/vehicles/lookup
 router.post('/lookup', async (req: Request, res: Response, next: NextFunction) => {
@@ -28,7 +39,7 @@ router.post('/lookup', async (req: Request, res: Response, next: NextFunction) =
         if (cachedVehicle.updatedAt > oneDayAgo) {
           return res.json({
             status: 'success',
-            data: cachedVehicle,
+            data: serializeVehicleWithTax(cachedVehicle),
             message: 'Vehicle found in cache',
             cached: true,
           });
@@ -44,7 +55,7 @@ router.post('/lookup', async (req: Request, res: Response, next: NextFunction) =
 
     res.json({
       status: 'success',
-      data: vehicle,
+      data: serializeVehicleWithTax(vehicle),
       message: 'Vehicle found and cached',
       cached: false,
     });
@@ -90,7 +101,7 @@ router.get('/:registration', async (req: Request, res: Response, next: NextFunct
 
     res.json({
       status: 'success',
-      data: vehicle,
+      data: serializeVehicleWithTax(vehicle),
     });
   } catch (error) {
     next(error);

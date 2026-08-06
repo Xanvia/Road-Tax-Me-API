@@ -36,14 +36,14 @@ class SubmissionService {
     sixMonthTaxRate: number | null;
     twelveMonthTaxRate: number | null;
     commissionFee: number;
-    totalAmount: number;
+    totalAmount: number | null;
     taxCalculationNotes: string;
   } {
     // Calculate the base tax rates using the vehicle data
     const taxResult = taxCalculator.calculateVehicleTax(vehicle);
 
     let commissionFee: number;
-    let totalAmount: number;
+    let totalAmount: number | null;
     let selectedTaxRate: number | null;
 
     switch (taxPreference) {
@@ -103,6 +103,10 @@ class SubmissionService {
 
       // Calculate tax amounts based on vehicle data and preference
       const taxCalculation = this.calculateTaxForSubmission(vehicle, data.taxPreference);
+
+      if (taxCalculation.totalAmount === null) {
+        throw new Error('Selected tax option is not available for this vehicle');
+      }
 
       // Create submission with all required fields
       const submission = new Submission();

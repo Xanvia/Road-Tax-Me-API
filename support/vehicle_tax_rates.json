@@ -164,8 +164,8 @@
           "12_month": 20,
           "12_month_dd": 20,
           "12_month_instalments": 173.25,
-          "6_month": 90.75,
-          "6_month_dd": 86.63
+          "6_month": null,
+          "6_month_dd": null
         },
         {
           "band": "B",
@@ -174,8 +174,8 @@
           "12_month": 20,
           "12_month_dd": 20,
           "12_month_instalments": 173.25,
-          "6_month": 90.75,
-          "6_month_dd": 86.63
+          "6_month": null,
+          "6_month_dd": null
         },
         {
           "band": "C",
@@ -184,8 +184,8 @@
           "12_month": 35,
           "12_month_dd": 35,
           "12_month_instalments": 173.25,
-          "6_month": 90.75,
-          "6_month_dd": 86.63
+          "6_month": null,
+          "6_month_dd": null
         },
         {
           "band": "D",
