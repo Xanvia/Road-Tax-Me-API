@@ -30,6 +30,10 @@ class DVLAService {
         throw new Error('Invalid registration number format');
       }
 
+      if (registrationNumber.toUpperCase().startsWith('MOCK')) {
+        return this.getMockVehicleData(registrationNumber);
+      }
+
       // In production, use actual DVLA endpoint
       // For now, we'll use mock data for development
       // const isDevelopment = process.env.NODE_ENV === 'development';
@@ -98,9 +102,33 @@ class DVLAService {
   }
 
   private getMockVehicleData(registration: string): DVLAResponse {
-    // Mock data for development
+    const regUpper = registration.toUpperCase();
+    if (regUpper === 'MOCK1') {
+      // First year vehicle (registered in the current month/year)
+      const todayStr = new Date().toISOString().split('T')[0];
+      const monthOfFirstRegistration = todayStr.substring(0, 7); // Format: YYYY-MM
+      return {
+        registrationNumber: 'MOCK1',
+        taxStatus: 'Untaxed',
+        taxDueDate: todayStr,
+        motStatus: 'Valid',
+        motExpiryDate: new Date(Date.now() + 300 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        make: 'TESLA',
+        colour: 'Red',
+        fuelType: 'Electric',
+        engineCapacity: 0,
+        co2Emissions: 0,
+        yearOfManufacture: new Date().getFullYear(),
+        euroStatus: 'EURO 6',
+        typeApproval: 'M1',
+        automatedVehicle: false,
+        monthOfFirstRegistration,
+      };
+    }
+
+    // Default mock: older vehicle (registered in 2015)
     return {
-      registrationNumber: registration.toUpperCase(),
+      registrationNumber: regUpper,
       taxStatus: 'Taxed',
       taxDueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       motStatus: 'Valid',
@@ -110,10 +138,11 @@ class DVLAService {
       fuelType: 'Petrol',
       engineCapacity: 1600,
       co2Emissions: 145,
-      yearOfManufacture: 2020,
+      yearOfManufacture: 2015,
       euroStatus: 'EURO 6d-TEMP',
-      typeApproval: '168/2013/EC',
+      typeApproval: 'M1',
       automatedVehicle: false,
+      monthOfFirstRegistration: '2015-06',
     };
   }
 }

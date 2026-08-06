@@ -336,9 +336,9 @@ export class TaxCalculator {
   /**
    * Calculate final amount with commission
    */
-  calculateWithCommission(taxRate: number | null, commissionFee: number): number {
+  calculateWithCommission(taxRate: number | null, commissionFee: number): number | null {
     if (taxRate === null) {
-      return commissionFee;
+      return null;
     }
     return taxRate + commissionFee;
   }

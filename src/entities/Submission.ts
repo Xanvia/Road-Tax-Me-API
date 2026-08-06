@@ -28,8 +28,8 @@ export class Submission {
   @Column('decimal', { precision: 10, scale: 2 })
   commissionFee: number; // Commission fee added (50 for tax options, 60 for direct debit)
 
-  @Column('decimal', { precision: 10, scale: 2 })
-  totalAmount: number; // Total amount: tax + commission
+  @Column('decimal', { precision: 10, scale: 2, nullable: true })
+  totalAmount: number | null; // Total amount: tax + commission
 
   @Column({ type: 'text', nullable: true })
   taxCalculationNotes: string | null; // Notes about tax calculation (band, special conditions, etc.)
