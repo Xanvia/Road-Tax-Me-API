@@ -10,7 +10,7 @@ export interface EmailPayload {
 
 class EmailService {
   private resendApiKey = process.env.RESEND_API_KEY || '';
-  private fromEmail = process.env.FROM_EMAIL || 'noreply@roadtaxme.com';
+  private fromEmail = process.env.RESEND_FROM_EMAIL || 'noreply@roadtaxme.com';
 
   /**
    * Send email using Resend API
